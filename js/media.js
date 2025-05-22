@@ -126,22 +126,31 @@ document.addEventListener("DOMContentLoaded", function () {
       speedLabel.style.fontSize = "12px";
       speedLabel.style.color = "#ccc";
       
+      // 创建数字输入框替代滑动条
       const speedInput = document.createElement("input");
-      speedInput.type = "range";
+      speedInput.type = "number";
       speedInput.min = "10";
-      speedInput.max = "200";
+      speedInput.max = "500";
       speedInput.value = "50";
-      speedInput.style.width = "80px";
+      speedInput.style.width = "50px";
+      speedInput.style.backgroundColor = "#333";
+      speedInput.style.color = "#ccc";
+      speedInput.style.border = "1px solid #555";
+      speedInput.style.borderRadius = "3px";
+      speedInput.style.padding = "2px 5px";
+      speedInput.style.fontSize = "12px";
       
-      const speedValue = document.createElement("span");
-      speedValue.textContent = "50ms";
-      speedValue.style.marginLeft = "5px";
-      speedValue.style.fontSize = "12px";
-      speedValue.style.color = "#ccc";
-      speedValue.style.width = "40px";
+      const speedUnit = document.createElement("span");
+      speedUnit.textContent = "ms";
+      speedUnit.style.marginLeft = "3px";
+      speedUnit.style.fontSize = "12px";
+      speedUnit.style.color = "#ccc";
       
       speedInput.addEventListener("input", function() {
-        speedValue.textContent = this.value + "ms";
+        // 限制输入范围
+        if (parseInt(this.value) < 10) this.value = 10;
+        if (parseInt(this.value) > 500) this.value = 500;
+        
         // 保存速度设置到全局状态
         if (!CodePoster.state.typingSpeed) {
           CodePoster.state.typingSpeed = {};
@@ -151,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       speedControlContainer.appendChild(speedLabel);
       speedControlContainer.appendChild(speedInput);
-      speedControlContainer.appendChild(speedValue);
+      speedControlContainer.appendChild(speedUnit);
       
       // 将速度控制添加到工具栏
       CodePoster.elements.recordVideoBtn.parentNode.appendChild(speedControlContainer);
