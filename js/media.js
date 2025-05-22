@@ -113,15 +113,72 @@ document.addEventListener("DOMContentLoaded", function () {
       // 将取消按钮添加到工具栏
       CodePoster.elements.recordVideoBtn.parentNode.appendChild(cancelRecordBtn);
       
+      // 创建速度设置控件
+      const speedControlContainer = document.createElement("div");
+      speedControlContainer.className = "speed-control";
+      speedControlContainer.style.display = "inline-flex";
+      speedControlContainer.style.alignItems = "center";
+      speedControlContainer.style.marginLeft = "10px";
+      
+      const speedLabel = document.createElement("label");
+      speedLabel.textContent = "打字速度: ";
+      speedLabel.style.marginRight = "5px";
+      speedLabel.style.fontSize = "12px";
+      speedLabel.style.color = "#ccc";
+      
+      const speedInput = document.createElement("input");
+      speedInput.type = "range";
+      speedInput.min = "10";
+      speedInput.max = "200";
+      speedInput.value = "50";
+      speedInput.style.width = "80px";
+      
+      const speedValue = document.createElement("span");
+      speedValue.textContent = "50ms";
+      speedValue.style.marginLeft = "5px";
+      speedValue.style.fontSize = "12px";
+      speedValue.style.color = "#ccc";
+      speedValue.style.width = "40px";
+      
+      speedInput.addEventListener("input", function() {
+        speedValue.textContent = this.value + "ms";
+        // 保存速度设置到全局状态
+        if (!CodePoster.state.typingSpeed) {
+          CodePoster.state.typingSpeed = {};
+        }
+        CodePoster.state.typingSpeed.value = parseInt(this.value);
+      });
+      
+      speedControlContainer.appendChild(speedLabel);
+      speedControlContainer.appendChild(speedInput);
+      speedControlContainer.appendChild(speedValue);
+      
+      // 将速度控制添加到工具栏
+      CodePoster.elements.recordVideoBtn.parentNode.appendChild(speedControlContainer);
+      
+      // 设置默认打字速度
+      if (!CodePoster.state.typingSpeed) {
+        CodePoster.state.typingSpeed = { value: 50 };
+      }
+      
       // 修改录制指示器样式，使其不被录制
       CodePoster.elements.recordingIndicator.style.position = "fixed";
       CodePoster.elements.recordingIndicator.style.top = "10px";
       CodePoster.elements.recordingIndicator.style.right = "10px";
       CodePoster.elements.recordingIndicator.style.zIndex = "9999";
       
+      // 设置编辑器自动换行
+      CodePoster.elements.codeInput.style.whiteSpace = "pre-wrap";
+      CodePoster.elements.codeInput.style.wordWrap = "break-word";
+      CodePoster.elements.codeDisplay.style.whiteSpace = "pre-wrap";
+      CodePoster.elements.codeDisplay.style.wordWrap = "break-word";
+      
       // 模拟打字效果函数
-      function simulateTyping(text, speed = 50) {
+      function simulateTyping(text, speed = null) {
         return new Promise((resolve) => {
+          // 使用用户设置的速度或默认速度
+          const typingSpeed = speed || (CodePoster.state.typingSpeed ? CodePoster.state.typingSpeed.value : 50);
+          
           // 保存原始代码
           const originalCode = CodePoster.elements.codeInput.value;
           
@@ -161,8 +218,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 CodePoster.elements.lineNumbers.scrollTop = CodePoster.elements.lineNumbers.scrollHeight;
               }
               
-              // 随机化打字速度，使其更像人工输入
-              const randomDelay = speed + Math.random() * 100;
+              // 使用设置的打字速度，添加少量随机性
+              const randomDelay = typingSpeed + Math.random() * (typingSpeed * 0.5);
               setTimeout(typeChar, randomDelay);
             } else {
               resolve();
@@ -181,6 +238,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // 保存当前代码
             const originalCode = CodePoster.elements.codeInput.value;
             const currentLanguage = CodePoster.elements.languageSelect.value;
+            
+            // 获取当前设置的打字速度
+            const typingSpeed = CodePoster.state.typingSpeed ? CodePoster.state.typingSpeed.value : 50;
             
             // 等待用户选择录制区域
             alert("请在下一步中选择要录制的区域（建议选择当前浏览器窗口）");
@@ -277,8 +337,8 @@ document.addEventListener("DOMContentLoaded", function () {
               // 等待一小段时间
               await new Promise(resolve => setTimeout(resolve, 1000));
               
-              // 开始模拟打字
-              await simulateTyping(originalCode);
+              // 开始模拟打字，使用设置的速度
+              await simulateTyping(originalCode, typingSpeed);
               
               // 打字完成后等待一段时间
               setTimeout(() => {
