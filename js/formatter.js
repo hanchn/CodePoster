@@ -15,19 +15,32 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         switch (language) {
           case "javascript":
+          case "typescript":
+          case "jsx":
+          case "tsx":
             formattedCode = formatJavaScript(code);
             break;
           case "html":
+          case "xml":
+          case "svg":
             formattedCode = formatHTML(code);
             break;
           case "css":
+          case "scss":
+          case "less":
             formattedCode = formatCSS(code);
             break;
           case "python":
             formattedCode = formatPython(code);
             break;
           case "java":
-            formattedCode = formatJava(code);
+          case "c":
+          case "cpp":
+          case "csharp":
+          case "go":
+          case "rust":
+          case "swift":
+            formattedCode = formatCStyle(code);
             break;
           default:
             // 基本格式化（适用于所有语言）
@@ -53,17 +66,18 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
     
-    // JavaScript格式化
+    // JavaScript格式化 - 改进版
     function formatJavaScript(code) {
-      // 基本的JavaScript格式化
+      // 使用更复杂的逻辑处理JavaScript代码
       let formatted = '';
       let indentLevel = 0;
       let inString = false;
       let stringChar = '';
       let inComment = false;
       let inMultilineComment = false;
-      let lastChar = '';
-      let nextChar = '';
+      
+      // 预处理：规范化换行符
+      code = code.replace(/\r\n/g, '\n');
       
       // 将代码拆分为行
       const lines = code.split('\n');
@@ -72,9 +86,29 @@ document.addEventListener("DOMContentLoaded", function () {
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i].trim();
         
-        // 跳过空行
+        // 跳过空行，但保留空行
         if (line === '') {
           formatted += '\n';
+          continue;
+        }
+        
+        // 处理注释行
+        if (line.startsWith('//')) {
+          formatted += '  '.repeat(indentLevel) + line + '\n';
+          continue;
+        }
+        
+        // 处理多行注释开始
+        if (line.startsWith('/*')) {
+          inMultilineComment = !line.includes('*/');
+          formatted += '  '.repeat(indentLevel) + line + '\n';
+          continue;
+        }
+        
+        // 处理多行注释结束
+        if (inMultilineComment) {
+          inMultilineComment = !line.includes('*/');
+          formatted += '  '.repeat(indentLevel) + line + '\n';
           continue;
         }
         
@@ -88,9 +122,23 @@ document.addEventListener("DOMContentLoaded", function () {
         formatted += indent + line + '\n';
         
         // 检查是否需要增加缩进
-        if (line.endsWith('{') || line.endsWith('(') || line.endsWith('[') || 
-            line.endsWith('=>') || line.endsWith(':')) {
+        const shouldIncreaseIndent = (
+          line.endsWith('{') || 
+          (line.endsWith('(') && !line.includes(')')) || 
+          (line.endsWith('[') && !line.includes(']')) || 
+          line.endsWith('=>') && !line.includes('{') ||
+          line.endsWith(':') && !line.includes(';')
+        );
+        
+        if (shouldIncreaseIndent) {
           indentLevel++;
+        }
+        
+        // 处理行内的闭合括号
+        const openBrackets = (line.match(/\{/g) || []).length;
+        const closeBrackets = (line.match(/\}/g) || []).length;
+        if (closeBrackets > openBrackets && !line.startsWith('}')) {
+          indentLevel = Math.max(0, indentLevel - (closeBrackets - openBrackets));
         }
         
         // 如果行以分号结束且下一行不是闭合括号，则不增加缩进
@@ -105,13 +153,16 @@ document.addEventListener("DOMContentLoaded", function () {
       return formatted.trim();
     }
     
-    // HTML格式化
+    // HTML格式化 - 改进版
     function formatHTML(code) {
-      // 基本的HTML格式化
       let formatted = '';
       let indentLevel = 0;
-      let inTag = false;
-      let inContent = false;
+      
+      // 预处理：规范化换行符
+      code = code.replace(/\r\n/g, '\n');
+      
+      // 预处理：在标签前后添加换行符
+      code = code.replace(/>\s*</g, '>\n<');
       
       // 将代码拆分为行
       const lines = code.split('\n');
@@ -126,8 +177,13 @@ document.addEventListener("DOMContentLoaded", function () {
           continue;
         }
         
-        // 检查是否是闭合标签
-        if (line.startsWith('</')) {
+        // 检查是否是闭合标签或自闭合标签
+        const isClosingTag = line.startsWith('</');
+        const isSelfClosingTag = line.endsWith('/>');
+        const isSpecialTag = line.startsWith('<!') || line.startsWith('<?');
+        
+        // 减少缩进级别（针对闭合标签）
+        if (isClosingTag) {
           indentLevel = Math.max(0, indentLevel - 1);
         }
         
@@ -135,12 +191,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const indent = '  '.repeat(indentLevel);
         formatted += indent + line + '\n';
         
-        // 检查是否需要增加缩进
-        if (line.includes('<') && !line.includes('</') && !line.endsWith('/>') && 
-            !line.startsWith('<!') && !line.startsWith('<?')) {
-          // 排除自闭合标签和特殊标签
-          if (!line.match(/<(img|br|hr|input|link|meta|source|track|wbr|area|base|col|embed|param|slot)\b[^>]*>/i)) {
-            indentLevel++;
+        // 增加缩进级别（针对开始标签，但不包括自闭合标签和特殊标签）
+        if (!isClosingTag && !isSelfClosingTag && !isSpecialTag && line.includes('<') && line.includes('>')) {
+          // 排除自闭合标签
+          const tagMatch = line.match(/<([a-zA-Z0-9]+)/);
+          if (tagMatch) {
+            const tag = tagMatch[1].toLowerCase();
+            const selfClosingTags = ['img', 'br', 'hr', 'input', 'link', 'meta', 'source', 'track', 'wbr', 'area', 'base', 'col', 'embed', 'param', 'slot'];
+            if (!selfClosingTags.includes(tag)) {
+              indentLevel++;
+            }
           }
         }
       }
@@ -148,11 +208,20 @@ document.addEventListener("DOMContentLoaded", function () {
       return formatted.trim();
     }
     
-    // CSS格式化
+    // CSS格式化 - 改进版
     function formatCSS(code) {
-      // 基本的CSS格式化
       let formatted = '';
       let indentLevel = 0;
+      
+      // 预处理：规范化换行符
+      code = code.replace(/\r\n/g, '\n');
+      
+      // 预处理：在大括号前后添加换行符
+      code = code.replace(/\s*\{\s*/g, ' {\n');
+      code = code.replace(/\s*\}\s*/g, '\n}\n');
+      
+      // 预处理：在分号后添加换行符
+      code = code.replace(/;\s*/g, ';\n');
       
       // 将代码拆分为行
       const lines = code.split('\n');
@@ -163,7 +232,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // 跳过空行
         if (line === '') {
-          formatted += '\n';
           continue;
         }
         
@@ -196,11 +264,14 @@ document.addEventListener("DOMContentLoaded", function () {
       return formatted.trim();
     }
     
-    // Python格式化
+    // Python格式化 - 改进版
     function formatPython(code) {
-      // 基本的Python格式化
       let formatted = '';
       let indentLevel = 0;
+      let pendingIndent = false;
+      
+      // 预处理：规范化换行符
+      code = code.replace(/\r\n/g, '\n');
       
       // 将代码拆分为行
       const lines = code.split('\n');
@@ -209,51 +280,53 @@ document.addEventListener("DOMContentLoaded", function () {
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i].trim();
         
-        // 跳过空行
+        // 跳过空行，但保留空行
         if (line === '') {
           formatted += '\n';
           continue;
         }
         
-        // 检查是否需要减少缩进
-        if (line.startsWith('return') || line.startsWith('break') || 
-            line.startsWith('continue') || line.startsWith('raise') || 
-            line.startsWith('pass')) {
-          // 保持当前缩进级别
-        } else if (i > 0 && (lines[i-1].endsWith(':') || 
-                  lines[i-1].endsWith('\\') || 
-                  lines[i-1].endsWith('('))) {
+        // 应用待处理的缩进
+        if (pendingIndent) {
           indentLevel++;
+          pendingIndent = false;
+        }
+        
+        // 检查是否需要减少缩进
+        if (i > 0 && indentLevel > 0) {
+          const prevLine = lines[i-1].trim();
+          // 如果上一行不是以冒号结束，且当前行不是缩进的，则减少缩进
+          if (!prevLine.endsWith(':') && !prevLine.endsWith('\\') && 
+              !prevLine.endsWith('(') && !prevLine.endsWith('[') && 
+              !line.startsWith(' ') && !line.startsWith('\t')) {
+            indentLevel = 0; // 重置缩进级别
+          }
         }
         
         // 添加缩进
         const indent = '    '.repeat(indentLevel); // Python使用4个空格
         formatted += indent + line + '\n';
         
-        // 检查是否需要减少缩进
-        if (i < lines.length - 1 && 
-            indentLevel > 0 && 
-            lines[i+1].trim() !== '' && 
-            !lines[i+1].trim().startsWith(' ') && 
-            !lines[i+1].trim().startsWith('\t')) {
-          indentLevel = Math.max(0, indentLevel - 1);
+        // 检查是否需要增加缩进
+        if (line.endsWith(':')) {
+          pendingIndent = true;
         }
       }
       
       return formatted.trim();
     }
     
-    // Java格式化
-    function formatJava(code) {
-      // 基本的Java格式化（类似JavaScript）
-      return formatJavaScript(code);
-    }
-    
-    // 通用格式化（适用于所有语言）
-    function formatGeneric(code) {
-      // 基本的通用格式化
+    // C风格语言格式化（C, C++, Java, C#等）
+    function formatCStyle(code) {
       let formatted = '';
       let indentLevel = 0;
+      
+      // 预处理：规范化换行符
+      code = code.replace(/\r\n/g, '\n');
+      
+      // 预处理：在大括号前后添加换行符
+      code = code.replace(/\s*\{\s*/g, ' {\n');
+      code = code.replace(/\s*\}\s*/g, '\n}\n');
       
       // 将代码拆分为行
       const lines = code.split('\n');
@@ -262,7 +335,59 @@ document.addEventListener("DOMContentLoaded", function () {
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i].trim();
         
-        // 跳过空行
+        // 跳过空行，但保留空行
+        if (line === '') {
+          formatted += '\n';
+          continue;
+        }
+        
+        // 处理注释行
+        if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) {
+          formatted += '  '.repeat(indentLevel) + line + '\n';
+          continue;
+        }
+        
+        // 检查是否需要减少缩进
+        if (line.startsWith('}') || line.startsWith(')') || line.startsWith(']')) {
+          indentLevel = Math.max(0, indentLevel - 1);
+        }
+        
+        // 添加缩进
+        const indent = '  '.repeat(indentLevel);
+        formatted += indent + line + '\n';
+        
+        // 检查是否需要增加缩进
+        if (line.endsWith('{')) {
+          indentLevel++;
+        }
+        
+        // 处理行内的闭合括号
+        const openBrackets = (line.match(/\{/g) || []).length;
+        const closeBrackets = (line.match(/\}/g) || []).length;
+        if (closeBrackets > openBrackets && !line.startsWith('}')) {
+          indentLevel = Math.max(0, indentLevel - (closeBrackets - openBrackets));
+        }
+      }
+      
+      return formatted.trim();
+    }
+    
+    // 通用格式化（适用于所有语言）- 改进版
+    function formatGeneric(code) {
+      let formatted = '';
+      let indentLevel = 0;
+      
+      // 预处理：规范化换行符
+      code = code.replace(/\r\n/g, '\n');
+      
+      // 将代码拆分为行
+      const lines = code.split('\n');
+      
+      // 处理每一行
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        
+        // 跳过空行，但保留空行
         if (line === '') {
           formatted += '\n';
           continue;

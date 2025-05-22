@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
         codeDisplayClone.style.fontFamily = "Menlo, Monaco, 'Courier New', monospace";
         codeDisplayClone.style.fontSize = CodePoster.elements.codeDisplay.style.fontSize || "14px";
         codeDisplayClone.style.lineHeight = CodePoster.elements.codeDisplay.style.lineHeight || "20px";
-        codeDisplayClone.style.whiteSpace = CodePoster.elements.codeDisplay.style.whiteSpace || "pre";
+        codeDisplayClone.style.whiteSpace = "pre";
         codeDisplayClone.style.overflow = "auto";
         codeDisplayClone.id = "recording-code-display";
         
@@ -228,12 +228,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         lineNumbersClone.innerHTML = lineNumbersHTML;
         
-        // 更新代码显示
-        codeDisplayClone.innerHTML = `<pre><code class="language-${language}">${CodePoster.functions.escapeHTML(text)}</code></pre>`;
+        // 更新代码显示 - 使用预处理的HTML而不是直接设置
+        const escapedCode = CodePoster.functions.escapeHTML(text);
+        codeDisplayClone.innerHTML = `<pre><code class="language-${language}">${escapedCode}</code></pre>`;
         
         // 应用高亮
         const codeBlock = codeDisplayClone.querySelector("pre code");
-        if (codeBlock) {
+        if (codeBlock && window.hljs) {
           hljs.highlightElement(codeBlock);
         }
       }
@@ -347,13 +348,24 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(async () => {
               // 模拟打字，同时更新录制视图
               let currentText = "";
-              for (let i = 0; i < originalCode.length; i++) {
-                currentText += originalCode.charAt(i);
-                updateRecordingView(currentText, currentLanguage);
+              const lines = originalCode.split('\n');
+              
+              for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (i > 0) {
+                  currentText += '\n';
+                  updateRecordingView(currentText, currentLanguage);
+                  await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+                }
                 
-                // 随机化打字速度，使其更像人工输入
-                const randomDelay = 50 + Math.random() * 100;
-                await new Promise(resolve => setTimeout(resolve, randomDelay));
+                for (let j = 0; j < line.length; j++) {
+                  currentText += line.charAt(j);
+                  updateRecordingView(currentText, currentLanguage);
+                  
+                  // 随机化打字速度，使其更像人工输入
+                  const randomDelay = 50 + Math.random() * 100;
+                  await new Promise(resolve => setTimeout(resolve, randomDelay));
+                }
               }
               
               // 打字完成后等待一段时间
