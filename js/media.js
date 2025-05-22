@@ -120,18 +120,46 @@ document.addEventListener("DOMContentLoaded", function () {
       CodePoster.elements.recordingIndicator.style.zIndex = "9999";
       
       // 模拟打字效果函数
-      function simulateTyping(text, element, speed = 50) {
+      function simulateTyping(text, speed = 50) {
         return new Promise((resolve) => {
+          // 保存原始代码
+          const originalCode = CodePoster.elements.codeInput.value;
+          
+          // 清空编辑器
+          CodePoster.elements.codeInput.value = '';
+          
+          // 触发input事件以更新高亮和行号
+          const inputEvent = new Event('input', { bubbles: true });
+          CodePoster.elements.codeInput.dispatchEvent(inputEvent);
+          
+          // 确保编辑器有固定高度
+          if (!CodePoster.elements.codeInput.style.height) {
+            CodePoster.elements.codeInput.style.height = '400px'; // 设置默认固定高度
+          }
+          
           let i = 0;
-          element.value = '';
           
           function typeChar() {
             if (i < text.length) {
-              element.value += text.charAt(i);
+              // 添加一个字符
+              CodePoster.elements.codeInput.value += text.charAt(i);
               i++;
+              
               // 触发input事件以更新高亮和行号
-              const event = new Event('input', { bubbles: true });
-              element.dispatchEvent(event);
+              CodePoster.elements.codeInput.dispatchEvent(inputEvent);
+              
+              // 自动滚动到底部
+              CodePoster.elements.codeInput.scrollTop = CodePoster.elements.codeInput.scrollHeight;
+              
+              // 同时滚动代码显示区域到底部
+              if (CodePoster.elements.codeDisplay) {
+                CodePoster.elements.codeDisplay.scrollTop = CodePoster.elements.codeDisplay.scrollHeight;
+              }
+              
+              // 同时滚动行号区域到底部
+              if (CodePoster.elements.lineNumbers) {
+                CodePoster.elements.lineNumbers.scrollTop = CodePoster.elements.lineNumbers.scrollHeight;
+              }
               
               // 随机化打字速度，使其更像人工输入
               const randomDelay = speed + Math.random() * 100;
@@ -141,102 +169,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
           
+          // 开始打字
           typeChar();
         });
-      }
-      
-      // 创建一个专门用于录制的视图
-      function createRecordingView() {
-        // 创建一个新的容器
-        const recordingView = document.createElement("div");
-        recordingView.id = "recording-view";
-        recordingView.style.position = "fixed";
-        recordingView.style.top = "0";
-        recordingView.style.left = "0";
-        recordingView.style.width = "100%";
-        recordingView.style.height = "100%";
-        recordingView.style.backgroundColor = "#1e1e1e";
-        recordingView.style.zIndex = "9998";
-        recordingView.style.display = "flex";
-        recordingView.style.flexDirection = "column";
-        recordingView.style.alignItems = "center";
-        recordingView.style.justifyContent = "center";
-        recordingView.style.padding = "20px";
-        
-        // 创建代码显示区域
-        const codeArea = document.createElement("div");
-        codeArea.style.width = "80%";
-        codeArea.style.maxWidth = "1000px";
-        codeArea.style.display = "flex";
-        codeArea.style.backgroundColor = "#252526";
-        codeArea.style.borderRadius = "8px";
-        codeArea.style.overflow = "hidden";
-        codeArea.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.5)";
-        
-        // 创建行号区域
-        const lineNumbersClone = document.createElement("div");
-        lineNumbersClone.style.width = "60px";
-        lineNumbersClone.style.backgroundColor = "#1e1e1e";
-        lineNumbersClone.style.color = "#858585";
-        lineNumbersClone.style.textAlign = "right";
-        lineNumbersClone.style.padding = "10px 0";
-        lineNumbersClone.style.userSelect = "none";
-        lineNumbersClone.style.fontFamily = "Menlo, Monaco, 'Courier New', monospace";
-        lineNumbersClone.style.fontSize = CodePoster.elements.lineNumbers.style.fontSize || "14px";
-        lineNumbersClone.style.lineHeight = CodePoster.elements.lineNumbers.style.lineHeight || "20px";
-        lineNumbersClone.innerHTML = CodePoster.elements.lineNumbers.innerHTML;
-        
-        // 创建代码显示区域
-        const codeDisplayClone = document.createElement("div");
-        codeDisplayClone.style.flex = "1";
-        codeDisplayClone.style.padding = "10px";
-        codeDisplayClone.style.backgroundColor = "#252526";
-        codeDisplayClone.style.color = "#d4d4d4";
-        codeDisplayClone.style.fontFamily = "Menlo, Monaco, 'Courier New', monospace";
-        codeDisplayClone.style.fontSize = CodePoster.elements.codeDisplay.style.fontSize || "14px";
-        codeDisplayClone.style.lineHeight = CodePoster.elements.codeDisplay.style.lineHeight || "20px";
-        codeDisplayClone.style.whiteSpace = "pre";
-        codeDisplayClone.style.overflow = "auto";
-        codeDisplayClone.id = "recording-code-display";
-        
-        // 添加到容器中
-        codeArea.appendChild(lineNumbersClone);
-        codeArea.appendChild(codeDisplayClone);
-        recordingView.appendChild(codeArea);
-        
-        return {
-          view: recordingView,
-          lineNumbers: lineNumbersClone,
-          codeDisplay: codeDisplayClone
-        };
-      }
-      
-      // 更新录制视图的代码和行号
-      function updateRecordingView(text, language) {
-        const recordingView = document.getElementById("recording-view");
-        if (!recordingView) return;
-        
-        const lineNumbersClone = recordingView.querySelector("div > div:first-child");
-        const codeDisplayClone = document.getElementById("recording-code-display");
-        
-        // 更新行号
-        const lines = text.split("\n");
-        const lineCount = lines.length;
-        let lineNumbersHTML = "";
-        for (let i = 1; i <= lineCount; i++) {
-          lineNumbersHTML += `<div>${i}</div>`;
-        }
-        lineNumbersClone.innerHTML = lineNumbersHTML;
-        
-        // 更新代码显示 - 使用预处理的HTML而不是直接设置
-        const escapedCode = CodePoster.functions.escapeHTML(text);
-        codeDisplayClone.innerHTML = `<pre><code class="language-${language}">${escapedCode}</code></pre>`;
-        
-        // 应用高亮
-        const codeBlock = codeDisplayClone.querySelector("pre code");
-        if (codeBlock && window.hljs) {
-          hljs.highlightElement(codeBlock);
-        }
       }
       
       // 录制按钮点击事件
@@ -246,13 +181,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // 保存当前代码
             const originalCode = CodePoster.elements.codeInput.value;
             const currentLanguage = CodePoster.elements.languageSelect.value;
-            
-            // 创建录制视图
-            const recordingViewObj = createRecordingView();
-            document.body.appendChild(recordingViewObj.view);
-            
-            // 初始化录制视图
-            updateRecordingView("", currentLanguage);
             
             // 等待用户选择录制区域
             alert("请在下一步中选择要录制的区域（建议选择当前浏览器窗口）");
@@ -268,10 +196,6 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // 如果用户取消了选择，则停止录制
             if (!stream) {
-              // 移除录制视图
-              if (recordingViewObj.view.parentNode) {
-                recordingViewObj.view.parentNode.removeChild(recordingViewObj.view);
-              }
               return;
             }
             
@@ -288,12 +212,6 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // 录制完成时的处理
             CodePoster.state.mediaRecorder.onstop = function() {
-              // 移除录制视图
-              const recordingView = document.getElementById("recording-view");
-              if (recordingView && recordingView.parentNode) {
-                recordingView.parentNode.removeChild(recordingView);
-              }
-              
               // 只有在有录制内容时才处理
               if (CodePoster.state.recordedChunks.length > 0) {
                 // 创建视频Blob
@@ -331,6 +249,11 @@ document.addEventListener("DOMContentLoaded", function () {
               CodePoster.elements.recordingIndicator.classList.remove("active");
               CodePoster.elements.recordVideoBtn.style.display = "inline-flex";
               cancelRecordBtn.style.display = "none";
+              
+              // 恢复原始代码
+              CodePoster.elements.codeInput.value = originalCode;
+              const inputEvent = new Event('input', { bubbles: true });
+              CodePoster.elements.codeInput.dispatchEvent(inputEvent);
             };
             
             // 开始录制
@@ -346,27 +269,16 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // 开始模拟打字效果
             setTimeout(async () => {
-              // 模拟打字，同时更新录制视图
-              let currentText = "";
-              const lines = originalCode.split('\n');
+              // 清空编辑器
+              CodePoster.elements.codeInput.value = '';
+              const inputEvent = new Event('input', { bubbles: true });
+              CodePoster.elements.codeInput.dispatchEvent(inputEvent);
               
-              for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                if (i > 0) {
-                  currentText += '\n';
-                  updateRecordingView(currentText, currentLanguage);
-                  await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
-                }
-                
-                for (let j = 0; j < line.length; j++) {
-                  currentText += line.charAt(j);
-                  updateRecordingView(currentText, currentLanguage);
-                  
-                  // 随机化打字速度，使其更像人工输入
-                  const randomDelay = 50 + Math.random() * 100;
-                  await new Promise(resolve => setTimeout(resolve, randomDelay));
-                }
-              }
+              // 等待一小段时间
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              
+              // 开始模拟打字
+              await simulateTyping(originalCode);
               
               // 打字完成后等待一段时间
               setTimeout(() => {
@@ -381,12 +293,6 @@ document.addEventListener("DOMContentLoaded", function () {
           console.error("视频录制失败:", error);
           alert("视频录制失败: " + error.message);
           
-          // 移除录制视图
-          const recordingView = document.getElementById("recording-view");
-          if (recordingView && recordingView.parentNode) {
-            recordingView.parentNode.removeChild(recordingView);
-          }
-          
           CodePoster.state.isRecording = false;
           CodePoster.elements.recordingIndicator.classList.remove("active");
         }
@@ -397,12 +303,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (CodePoster.state.isRecording && CodePoster.state.mediaRecorder) {
           // 停止录制
           CodePoster.state.mediaRecorder.stop();
-          
-          // 移除录制视图
-          const recordingView = document.getElementById("recording-view");
-          if (recordingView && recordingView.parentNode) {
-            recordingView.parentNode.removeChild(recordingView);
-          }
           
           // 重置状态
           CodePoster.state.isRecording = false;
