@@ -246,10 +246,36 @@ document.addEventListener("DOMContentLoaded", function () {
           CodePoster.elements.codeDisplay.style.height = '100%';
           CodePoster.elements.lineNumbers.style.height = '100%';
           
-          // 设置滚动条
-          CodePoster.elements.codeInput.style.overflowY = 'auto';
-          CodePoster.elements.codeDisplay.style.overflowY = 'auto';
-          CodePoster.elements.lineNumbers.style.overflowY = 'auto';
+          // 确保滚动条显示 - 明确设置overflow属性
+          CodePoster.elements.codeInput.style.overflow = 'auto';
+          CodePoster.elements.codeDisplay.style.overflow = 'auto';
+          CodePoster.elements.lineNumbers.style.overflow = 'auto';
+          
+          // 设置滚动条样式，使其更明显
+          const scrollbarStyle = `
+            ::-webkit-scrollbar {
+              width: 8px;
+              height: 8px;
+            }
+            ::-webkit-scrollbar-track {
+              background: #2a2a2a;
+            }
+            ::-webkit-scrollbar-thumb {
+              background: #555;
+              border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+              background: #777;
+            }
+          `;
+          
+          // 添加滚动条样式
+          if (!document.getElementById('scrollbar-style')) {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'scrollbar-style';
+            styleEl.textContent = scrollbarStyle;
+            document.head.appendChild(styleEl);
+          }
         } else {
           // 自适应高度 - 移除固定高度限制
           editorContainer.style.height = 'auto';
@@ -265,9 +291,9 @@ document.addEventListener("DOMContentLoaded", function () {
           CodePoster.elements.lineNumbers.style.minHeight = '200px';
           
           // 保持滚动条设置
-          CodePoster.elements.codeInput.style.overflowY = 'auto';
-          CodePoster.elements.codeDisplay.style.overflowY = 'auto';
-          CodePoster.elements.lineNumbers.style.overflowY = 'auto';
+          CodePoster.elements.codeInput.style.overflow = 'auto';
+          CodePoster.elements.codeDisplay.style.overflow = 'auto';
+          CodePoster.elements.lineNumbers.style.overflow = 'auto';
         }
         
         // 确保编辑器内容自动换行
@@ -283,9 +309,20 @@ document.addEventListener("DOMContentLoaded", function () {
         CodePoster.elements.codeDisplay.style.width = "100%";
         CodePoster.elements.codeDisplay.style.boxSizing = "border-box";
         
-        // 触发重新渲染
+        // 强制重新计算布局
         setTimeout(() => {
+          // 触发重新渲染
           window.dispatchEvent(new Event('resize'));
+          
+          // 强制刷新滚动区域
+          if (height > 0) {
+            // 临时增加内容高度，确保滚动条显示
+            const tempPadding = CodePoster.elements.codeInput.style.paddingBottom;
+            CodePoster.elements.codeInput.style.paddingBottom = '1px';
+            setTimeout(() => {
+              CodePoster.elements.codeInput.style.paddingBottom = tempPadding;
+            }, 50);
+          }
         }, 10);
       }
       
