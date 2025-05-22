@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
         CodePoster.elements.editorContainer.style.backgroundColor = "#ffffff";
         CodePoster.elements.lineNumbers.style.backgroundColor = "#f0f0f0";
         CodePoster.elements.lineNumbers.style.color = "#666666";
-        CodePoster.elements.codeInput.style.color = "#1a1a1a";
+        CodePoster.elements.codeInput.style.color = "transparent";
+        CodePoster.elements.codeInput.style.caretColor = "#000000"; // 浅色主题下光标改为黑色
         CodePoster.elements.codeDisplay.style.color = "#1a1a1a";
         document.querySelector(".toolbar").style.backgroundColor = "#e8e8e8";
         document.querySelector(".toolbar").style.borderTop = "1px solid #d0d0d0";
@@ -47,7 +48,8 @@ document.addEventListener("DOMContentLoaded", function () {
         CodePoster.elements.editorContainer.style.backgroundColor = "#252526";
         CodePoster.elements.lineNumbers.style.backgroundColor = "#1e1e1e";
         CodePoster.elements.lineNumbers.style.color = "#858585";
-        CodePoster.elements.codeInput.style.color = "#d4d4d4";
+        CodePoster.elements.codeInput.style.color = "transparent";
+        CodePoster.elements.codeInput.style.caretColor = "#ffffff"; // 深色主题下光标为白色
         CodePoster.elements.codeDisplay.style.color = "#d4d4d4";
         document.querySelector(".toolbar").style.backgroundColor = "#2d2d2d";
         document.querySelector(".toolbar").style.borderTop = "1px solid #444";
