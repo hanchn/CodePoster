@@ -236,9 +236,18 @@ document.addEventListener("DOMContentLoaded", function () {
         // 获取编辑器容器
         const editorContainer = CodePoster.elements.editorContainer;
         
+        // 设置编辑器容器的基本样式
+        editorContainer.style.display = 'flex';
+        editorContainer.style.width = '100%';
+        editorContainer.style.position = 'relative';
+        
+        // 设置行号区域样式
+        CodePoster.elements.lineNumbers.style.overflowY = 'hidden'; // 隐藏行号区域的滚动条
+        CodePoster.elements.lineNumbers.style.flexShrink = '0'; // 防止行号区域被压缩
+        CodePoster.elements.lineNumbers.style.borderRight = '1px solid #444'; // 添加分隔线
+        
         if (height > 0) {
           // 设置固定高度
-          // 为编辑器容器设置高度
           editorContainer.style.height = height + 'px';
           
           // 设置编辑器组件高度
@@ -246,38 +255,13 @@ document.addEventListener("DOMContentLoaded", function () {
           CodePoster.elements.codeDisplay.style.height = '100%';
           CodePoster.elements.lineNumbers.style.height = '100%';
           
-          // 确保滚动条显示 - 明确设置overflow属性
-          CodePoster.elements.codeInput.style.overflow = 'auto';
-          CodePoster.elements.codeDisplay.style.overflow = 'auto';
-          CodePoster.elements.lineNumbers.style.overflow = 'auto';
-          
-          // 设置滚动条样式，使其更明显
-          const scrollbarStyle = `
-            ::-webkit-scrollbar {
-              width: 8px;
-              height: 8px;
-            }
-            ::-webkit-scrollbar-track {
-              background: #2a2a2a;
-            }
-            ::-webkit-scrollbar-thumb {
-              background: #555;
-              border-radius: 4px;
-            }
-            ::-webkit-scrollbar-thumb:hover {
-              background: #777;
-            }
-          `;
-          
-          // 添加滚动条样式
-          if (!document.getElementById('scrollbar-style')) {
-            const styleEl = document.createElement('style');
-            styleEl.id = 'scrollbar-style';
-            styleEl.textContent = scrollbarStyle;
-            document.head.appendChild(styleEl);
-          }
+          // 只在垂直方向显示滚动条
+          CodePoster.elements.codeInput.style.overflowY = 'auto';
+          CodePoster.elements.codeInput.style.overflowX = 'hidden';
+          CodePoster.elements.codeDisplay.style.overflowY = 'auto';
+          CodePoster.elements.codeDisplay.style.overflowX = 'hidden';
         } else {
-          // 自适应高度 - 移除固定高度限制
+          // 自适应高度模式
           editorContainer.style.height = 'auto';
           
           // 重置编辑器组件高度
@@ -285,44 +269,63 @@ document.addEventListener("DOMContentLoaded", function () {
           CodePoster.elements.codeDisplay.style.height = 'auto';
           CodePoster.elements.lineNumbers.style.height = 'auto';
           
-          // 最小高度
+          // 设置最小高度
           CodePoster.elements.codeInput.style.minHeight = '200px';
           CodePoster.elements.codeDisplay.style.minHeight = '200px';
           CodePoster.elements.lineNumbers.style.minHeight = '200px';
           
-          // 保持滚动条设置
-          CodePoster.elements.codeInput.style.overflow = 'auto';
-          CodePoster.elements.codeDisplay.style.overflow = 'auto';
-          CodePoster.elements.lineNumbers.style.overflow = 'auto';
+          // 只在垂直方向显示滚动条
+          CodePoster.elements.codeInput.style.overflowY = 'auto';
+          CodePoster.elements.codeInput.style.overflowX = 'hidden';
+          CodePoster.elements.codeDisplay.style.overflowY = 'auto';
+          CodePoster.elements.codeDisplay.style.overflowX = 'hidden';
         }
         
-        // 确保编辑器内容自动换行
-        CodePoster.elements.codeInput.style.whiteSpace = "pre-wrap";
-        CodePoster.elements.codeInput.style.wordWrap = "break-word";
-        CodePoster.elements.codeInput.style.wordBreak = "break-all";
-        CodePoster.elements.codeInput.style.width = "100%";
-        CodePoster.elements.codeInput.style.boxSizing = "border-box";
+        // 设置代码编辑器的文本样式
+        const textStyles = {
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
+          wordBreak: 'normal', // 改用 normal 而不是 break-all，以保持单词完整性
+          width: '100%',
+          boxSizing: 'border-box',
+          padding: '10px',
+          lineHeight: '1.5',
+          tabSize: '2'
+        };
         
-        CodePoster.elements.codeDisplay.style.whiteSpace = "pre-wrap";
-        CodePoster.elements.codeDisplay.style.wordWrap = "break-word";
-        CodePoster.elements.codeDisplay.style.wordBreak = "break-all";
-        CodePoster.elements.codeDisplay.style.width = "100%";
-        CodePoster.elements.codeDisplay.style.boxSizing = "border-box";
+        // 应用文本样式到输入和显示区域
+        Object.assign(CodePoster.elements.codeInput.style, textStyles);
+        Object.assign(CodePoster.elements.codeDisplay.style, textStyles);
+        
+        // 设置滚动条样式
+        const scrollbarStyle = `
+          ::-webkit-scrollbar {
+            width: 8px;
+            height: 0px; // 隐藏水平滚动条
+          }
+          ::-webkit-scrollbar-track {
+            background: #2a2a2a;
+          }
+          ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+          }
+          ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+          }
+        `;
+        
+        // 添加滚动条样式
+        if (!document.getElementById('scrollbar-style')) {
+          const styleEl = document.createElement('style');
+          styleEl.id = 'scrollbar-style';
+          styleEl.textContent = scrollbarStyle;
+          document.head.appendChild(styleEl);
+        }
         
         // 强制重新计算布局
         setTimeout(() => {
-          // 触发重新渲染
           window.dispatchEvent(new Event('resize'));
-          
-          // 强制刷新滚动区域
-          if (height > 0) {
-            // 临时增加内容高度，确保滚动条显示
-            const tempPadding = CodePoster.elements.codeInput.style.paddingBottom;
-            CodePoster.elements.codeInput.style.paddingBottom = '1px';
-            setTimeout(() => {
-              CodePoster.elements.codeInput.style.paddingBottom = tempPadding;
-            }, 50);
-          }
         }, 10);
       }
       
