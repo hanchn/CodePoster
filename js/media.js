@@ -165,9 +165,128 @@ document.addEventListener("DOMContentLoaded", function () {
       // 将速度控制添加到工具栏
       CodePoster.elements.recordVideoBtn.parentNode.appendChild(speedControlContainer);
       
+      // 创建编辑器高度设置控件
+      const heightControlContainer = document.createElement("div");
+      heightControlContainer.className = "height-control";
+      heightControlContainer.style.display = "inline-flex";
+      heightControlContainer.style.alignItems = "center";
+      heightControlContainer.style.marginLeft = "10px";
+      
+      const heightLabel = document.createElement("label");
+      heightLabel.textContent = "编辑器高度: ";
+      heightLabel.style.marginRight = "5px";
+      heightLabel.style.fontSize = "12px";
+      heightLabel.style.color = "#ccc";
+      
+      const heightInput = document.createElement("input");
+      heightInput.type = "number";
+      heightInput.min = "0";
+      heightInput.max = "1000";
+      heightInput.value = "0";
+      heightInput.style.width = "50px";
+      heightInput.style.backgroundColor = "#333";
+      heightInput.style.color = "#ccc";
+      heightInput.style.border = "1px solid #555";
+      heightInput.style.borderRadius = "3px";
+      heightInput.style.padding = "2px 5px";
+      heightInput.style.fontSize = "12px";
+      
+      const heightUnit = document.createElement("span");
+      heightUnit.textContent = "px";
+      heightUnit.style.marginLeft = "3px";
+      heightUnit.style.fontSize = "12px";
+      heightUnit.style.color = "#ccc";
+      
+      heightInput.addEventListener("input", function() {
+        // 限制输入范围
+        if (parseInt(this.value) < 0) this.value = 0;
+        if (parseInt(this.value) > 1000) this.value = 1000;
+        
+        // 保存高度设置到全局状态
+        if (!CodePoster.state.editorHeight) {
+          CodePoster.state.editorHeight = {};
+        }
+        CodePoster.state.editorHeight.value = parseInt(this.value);
+        
+        // 应用高度设置
+        applyEditorHeight();
+      });
+      
+      heightControlContainer.appendChild(heightLabel);
+      heightControlContainer.appendChild(heightInput);
+      heightControlContainer.appendChild(heightUnit);
+      
+      // 将高度控制添加到工具栏
+      CodePoster.elements.recordVideoBtn.parentNode.appendChild(heightControlContainer);
+      
       // 设置默认打字速度
       if (!CodePoster.state.typingSpeed) {
         CodePoster.state.typingSpeed = { value: 50 };
+      }
+      
+      // 设置默认编辑器高度
+      if (!CodePoster.state.editorHeight) {
+        CodePoster.state.editorHeight = { value: 0 };
+      }
+      
+      // 应用编辑器高度设置函数
+      function applyEditorHeight() {
+        const height = CodePoster.state.editorHeight.value;
+        
+        // 获取编辑器容器
+        const editorContainer = CodePoster.elements.editorContainer;
+        
+        if (height > 0) {
+          // 设置固定高度
+          // 为编辑器容器设置高度
+          editorContainer.style.height = height + 'px';
+          
+          // 设置编辑器组件高度
+          CodePoster.elements.codeInput.style.height = '100%';
+          CodePoster.elements.codeDisplay.style.height = '100%';
+          CodePoster.elements.lineNumbers.style.height = '100%';
+          
+          // 设置滚动条
+          CodePoster.elements.codeInput.style.overflowY = 'auto';
+          CodePoster.elements.codeDisplay.style.overflowY = 'auto';
+          CodePoster.elements.lineNumbers.style.overflowY = 'auto';
+        } else {
+          // 自适应高度 - 移除固定高度限制
+          editorContainer.style.height = 'auto';
+          
+          // 重置编辑器组件高度
+          CodePoster.elements.codeInput.style.height = 'auto';
+          CodePoster.elements.codeDisplay.style.height = 'auto';
+          CodePoster.elements.lineNumbers.style.height = 'auto';
+          
+          // 最小高度
+          CodePoster.elements.codeInput.style.minHeight = '200px';
+          CodePoster.elements.codeDisplay.style.minHeight = '200px';
+          CodePoster.elements.lineNumbers.style.minHeight = '200px';
+          
+          // 保持滚动条设置
+          CodePoster.elements.codeInput.style.overflowY = 'auto';
+          CodePoster.elements.codeDisplay.style.overflowY = 'auto';
+          CodePoster.elements.lineNumbers.style.overflowY = 'auto';
+        }
+        
+        // 确保编辑器内容自动换行
+        CodePoster.elements.codeInput.style.whiteSpace = "pre-wrap";
+        CodePoster.elements.codeInput.style.wordWrap = "break-word";
+        CodePoster.elements.codeInput.style.wordBreak = "break-all";
+        CodePoster.elements.codeInput.style.width = "100%";
+        CodePoster.elements.codeInput.style.boxSizing = "border-box";
+        
+        CodePoster.elements.codeDisplay.style.whiteSpace = "pre-wrap";
+        CodePoster.elements.codeDisplay.style.wordWrap = "break-word";
+        CodePoster.elements.codeDisplay.style.wordBreak = "break-all";
+        CodePoster.elements.codeDisplay.style.width = "100%";
+        CodePoster.elements.codeDisplay.style.boxSizing = "border-box";
+        
+        // 触发重新渲染
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+        }, 10);
       }
       
       // 修改录制指示器样式，使其不被录制
@@ -176,11 +295,21 @@ document.addEventListener("DOMContentLoaded", function () {
       CodePoster.elements.recordingIndicator.style.right = "10px";
       CodePoster.elements.recordingIndicator.style.zIndex = "9999";
       
-      // 设置编辑器自动换行
+      // 设置编辑器自动换行 - 改进版
       CodePoster.elements.codeInput.style.whiteSpace = "pre-wrap";
       CodePoster.elements.codeInput.style.wordWrap = "break-word";
+      CodePoster.elements.codeInput.style.wordBreak = "break-all";
+      CodePoster.elements.codeInput.style.width = "100%";
+      CodePoster.elements.codeInput.style.boxSizing = "border-box";
+      
       CodePoster.elements.codeDisplay.style.whiteSpace = "pre-wrap";
       CodePoster.elements.codeDisplay.style.wordWrap = "break-word";
+      CodePoster.elements.codeDisplay.style.wordBreak = "break-all";
+      CodePoster.elements.codeDisplay.style.width = "100%";
+      CodePoster.elements.codeDisplay.style.boxSizing = "border-box";
+      
+      // 初始应用编辑器高度设置
+      applyEditorHeight();
       
       // 模拟打字效果函数
       function simulateTyping(text, speed = null) {
@@ -198,10 +327,8 @@ document.addEventListener("DOMContentLoaded", function () {
           const inputEvent = new Event('input', { bubbles: true });
           CodePoster.elements.codeInput.dispatchEvent(inputEvent);
           
-          // 确保编辑器有固定高度
-          if (!CodePoster.elements.codeInput.style.height) {
-            CodePoster.elements.codeInput.style.height = '400px'; // 设置默认固定高度
-          }
+          // 应用当前的编辑器高度设置
+          applyEditorHeight();
           
           let i = 0;
           
