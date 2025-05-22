@@ -15,6 +15,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const fontSizeInput = document.getElementById("font-size-input");
   const editorContainer = document.getElementById("editor-container");
 
+  // 检查必要的元素是否存在
+  if (!codeInput || !codeDisplay || !lineNumbers || !editorContainer) {
+    console.error("缺少必要的DOM元素");
+    return;
+  }
+
   let generatedImageUrl = null;
 
   // 初始化行号
@@ -274,15 +280,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 复制代码
   copyBtn.addEventListener("click", function () {
-    codeInput.select();
-    document.execCommand("copy");
-
-    // 显示复制成功提示
-    const originalText = copyBtn.textContent;
-    copyBtn.textContent = "复制成功!";
-    setTimeout(() => {
-      copyBtn.textContent = originalText;
-    }, 1500);
+    try {
+      // 使用现代API进行复制
+      navigator.clipboard.writeText(codeInput.value).then(() => {
+        // 显示复制成功提示
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = "复制成功!";
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 1500);
+      }).catch(err => {
+        // 如果现代API失败，回退到传统方法
+        codeInput.select();
+        document.execCommand("copy");
+        
+        // 显示复制成功提示
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = "复制成功!";
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 1500);
+      });
+    } catch (error) {
+      alert("复制失败: " + error.message);
+    }
   });
 
   // 自动换行切换 - 修复自动换行功能
@@ -318,98 +339,89 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // 生成图片 - 不包含底部工具栏
-  generateImageBtn.addEventListener("click", function () {
-    // 创建一个临时容器，只包含编辑器的主要部分
-    const tempContainer = document.createElement("div");
-    tempContainer.style.display = "flex";
-    tempContainer.style.backgroundColor = "#1e1e1e";
-    tempContainer.style.borderRadius = "8px";
-    tempContainer.style.overflow = "hidden";
-    tempContainer.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.5)";
+  // 生成图片功能
+  if (generateImageBtn) {
+    generateImageBtn.addEventListener("click", async function () {
+      try {
+        console.log("生成图片按钮被点击");
+        
+        // 创建一个临时容器
+        const tempContainer = document.createElement("div");
+        tempContainer.style.position = "absolute";
+        tempContainer.style.left = "-9999px";
+        tempContainer.style.top = "-9999px";
+        tempContainer.style.width = editorContainer.offsetWidth + "px";
+        tempContainer.style.height = (editorContainer.offsetHeight - document.querySelector(".toolbar").offsetHeight) + "px";
+        tempContainer.style.backgroundColor = editorContainer.style.backgroundColor;
+        tempContainer.style.borderRadius = "8px";
+        tempContainer.style.overflow = "hidden";
+        tempContainer.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.5)";
+        tempContainer.style.display = "flex";
 
-    // 克隆行号区域
-    const lineNumbersClone = lineNumbers.cloneNode(true);
-    tempContainer.appendChild(lineNumbersClone);
+        // 克隆行号区域
+        const lineNumbersClone = lineNumbers.cloneNode(true);
+        lineNumbersClone.style.width = "60px";
+        lineNumbersClone.style.backgroundColor = lineNumbers.style.backgroundColor;
+        lineNumbersClone.style.color = lineNumbers.style.color;
+        tempContainer.appendChild(lineNumbersClone);
 
-    // 创建代码区域容器
-    const codeAreaClone = document.createElement("div");
-    codeAreaClone.style.flex = "1";
-    codeAreaClone.style.display = "flex";
-    codeAreaClone.style.backgroundColor = "#252526";
+        // 克隆代码显示区域
+        const codeDisplayClone = document.createElement("div");
+        codeDisplayClone.style.flex = "1";
+        codeDisplayClone.style.padding = "10px";
+        codeDisplayClone.style.fontFamily = "Menlo, Monaco, Courier New, monospace";
+        codeDisplayClone.style.fontSize = codeDisplay.style.fontSize || "14px";
+        codeDisplayClone.style.lineHeight = codeDisplay.style.lineHeight || "20px";
+        codeDisplayClone.style.whiteSpace = codeDisplay.style.whiteSpace || "pre";
+        codeDisplayClone.style.color = codeDisplay.style.color;
+        codeDisplayClone.style.backgroundColor = "transparent";
+        codeDisplayClone.innerHTML = codeDisplay.innerHTML;
+        tempContainer.appendChild(codeDisplayClone);
 
-    // 克隆编辑器区域
-    const editorClone = document.createElement("div");
-    editorClone.style.flex = "1";
-    editorClone.style.display = "flex";
-    editorClone.style.overflow = "hidden";
+        // 将临时容器添加到文档中
+        document.body.appendChild(tempContainer);
 
-    // 克隆编辑器内容
-    const editorWrapperClone = document.createElement("div");
-    editorWrapperClone.style.flex = "1";
-    editorWrapperClone.style.position = "relative";
-    editorWrapperClone.style.overflow = "auto";
+        // 等待一帧以确保样式应用
+        await new Promise(resolve => requestAnimationFrame(resolve));
 
-    // 克隆代码显示区域
-    const codeDisplayClone = document.createElement("div");
-    codeDisplayClone.innerHTML = codeDisplay.innerHTML;
-    codeDisplayClone.style.padding = "10px";
-    codeDisplayClone.style.fontFamily =
-      "Menlo, Monaco, Courier New, monospace";
-    codeDisplayClone.style.fontSize =
-      codeDisplay.style.fontSize || "14px";
-    codeDisplayClone.style.lineHeight =
-      codeDisplay.style.lineHeight || "20px";
-    codeDisplayClone.style.whiteSpace =
-      codeDisplay.style.whiteSpace || "pre";
+        console.log("开始生成图片");
+        // 使用html2canvas截取临时容器
+        const canvas = await html2canvas(tempContainer, {
+          backgroundColor: null,
+          scale: 2,
+          logging: true,
+          useCORS: true,
+          allowTaint: true,
+          foreignObjectRendering: true,
+          imageTimeout: 0,
+          removeContainer: true
+        });
 
-    editorWrapperClone.appendChild(codeDisplayClone);
-    editorClone.appendChild(editorWrapperClone);
-    codeAreaClone.appendChild(editorClone);
-
-    tempContainer.appendChild(codeAreaClone);
-
-    // 设置临时容器的尺寸
-    tempContainer.style.width = editorContainer.offsetWidth + "px";
-    // 计算高度时排除工具栏高度
-    const toolbarHeight = document.querySelector(".toolbar").offsetHeight;
-    tempContainer.style.height =
-      editorContainer.offsetHeight - toolbarHeight + "px";
-
-    // 将临时容器添加到文档中但不可见
-    tempContainer.style.position = "absolute";
-    tempContainer.style.left = "-9999px";
-    document.body.appendChild(tempContainer);
-
-    // 使用html2canvas截取临时容器
-    html2canvas(tempContainer, {
-      backgroundColor: "#1e1e1e",
-      scale: 2, // 提高图片质量
-      logging: false,
-      useCORS: true,
-    })
-      .then((canvas) => {
+        console.log("图片生成完成");
         // 显示生成的图片
         imageContainer.innerHTML = "";
         const img = document.createElement("img");
-        generatedImageUrl = canvas.toDataURL("image/png");
+        generatedImageUrl = canvas.toDataURL("image/png", 1.0);
         img.src = generatedImageUrl;
+        img.style.maxWidth = "100%";
+        img.style.height = "auto";
         imageContainer.appendChild(img);
 
         // 显示模态框
         imageModal.style.display = "flex";
 
         // 移除临时容器
-        document.body.removeChild(tempContainer);
-      })
-      .catch((error) => {
-        alert("生成图片失败: " + error.message);
-        // 确保临时容器被移除
         if (document.body.contains(tempContainer)) {
           document.body.removeChild(tempContainer);
         }
-      });
-  });
+      } catch (error) {
+        console.error("生成图片失败:", error);
+        alert("生成图片失败: " + error.message);
+      }
+    });
+  } else {
+    console.error("未找到生成图片按钮");
+  }
 
   // 下载图片
   downloadBtn.addEventListener("click", function () {
@@ -445,18 +457,168 @@ const themeSelect = document.getElementById("theme-select");
 themeSelect.addEventListener("change", function() {
   const theme = this.value;
   if (theme === "light") {
+    // 浅色主题
     document.body.style.backgroundColor = "#f5f5f5";
-    document.body.style.color = "#333";
-    editorContainer.style.backgroundColor = "#fff";
-    lineNumbers.style.backgroundColor = "#eee";
-    lineNumbers.style.color = "#666";
-    // ... existing code ...
+    document.body.style.color = "#1a1a1a";
+    editorContainer.style.backgroundColor = "#ffffff";
+    lineNumbers.style.backgroundColor = "#f0f0f0";
+    lineNumbers.style.color = "#666666";
+    codeInput.style.color = "#1a1a1a";
+    codeDisplay.style.color = "#1a1a1a";
+    document.querySelector(".toolbar").style.backgroundColor = "#e8e8e8";
+    document.querySelector(".toolbar").style.borderTop = "1px solid #d0d0d0";
+    
+    // 调整按钮颜色
+    const buttons = document.querySelectorAll("button:not(.record-btn):not(.pause-btn):not(.stop-btn)");
+    buttons.forEach(button => {
+      button.style.backgroundColor = "#0066cc";
+      button.style.color = "#ffffff";
+    });
+    
+    // 调整选择器和输入框
+    const selects = document.querySelectorAll("select");
+    const inputs = document.querySelectorAll("input[type='number']");
+    selects.forEach(select => {
+      select.style.backgroundColor = "#ffffff";
+      select.style.color = "#1a1a1a";
+      select.style.border = "1px solid #cccccc";
+    });
+    inputs.forEach(input => {
+      input.style.backgroundColor = "#ffffff";
+      input.style.color = "#1a1a1a";
+      input.style.border = "1px solid #cccccc";
+    });
   } else {
+    // 深色主题
     document.body.style.backgroundColor = "#1e1e1e";
     document.body.style.color = "#d4d4d4";
     editorContainer.style.backgroundColor = "#252526";
     lineNumbers.style.backgroundColor = "#1e1e1e";
     lineNumbers.style.color = "#858585";
-    // ... existing code ...
+    codeInput.style.color = "#d4d4d4";
+    codeDisplay.style.color = "#d4d4d4";
+    document.querySelector(".toolbar").style.backgroundColor = "#2d2d2d";
+    document.querySelector(".toolbar").style.borderTop = "1px solid #444";
+    
+    // 恢复按钮颜色
+    const buttons = document.querySelectorAll("button:not(.record-btn):not(.pause-btn):not(.stop-btn)");
+    buttons.forEach(button => {
+      button.style.backgroundColor = "#0e639c";
+      button.style.color = "#ffffff";
+    });
+    
+    // 恢复选择器和输入框
+    const selects = document.querySelectorAll("select");
+    const inputs = document.querySelectorAll("input[type='number']");
+    selects.forEach(select => {
+      select.style.backgroundColor = "#3c3c3c";
+      select.style.color = "#d4d4d4";
+      select.style.border = "1px solid #555";
+    });
+    inputs.forEach(input => {
+      input.style.backgroundColor = "#3c3c3c";
+      input.style.color = "#d4d4d4";
+      input.style.border = "1px solid #555";
+    });
+  }
+});
+
+// 视频录制功能
+const recordVideoBtn = document.getElementById("record-video-btn");
+const videoModal = document.getElementById("video-modal");
+const closeVideoModal = document.getElementById("close-video-modal");
+const videoContainer = document.getElementById("video-container");
+const downloadVideoBtn = document.getElementById("download-video-btn");
+const recordingIndicator = document.getElementById("recording-indicator");
+
+// 暂时禁用视频录制功能
+recordVideoBtn.style.opacity = "0.5";
+recordVideoBtn.style.cursor = "not-allowed";
+recordVideoBtn.disabled = true;
+
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
+
+recordVideoBtn.addEventListener("click", async function() {
+  try {
+    if (!isRecording) {
+      // 开始录制
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          mediaSource: "screen",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
+        audio: true
+      });
+
+      mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "video/webm;codecs=vp9"
+      });
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, {
+          type: "video/webm"
+        });
+        const videoUrl = URL.createObjectURL(blob);
+        
+        // 显示录制的视频
+        videoContainer.innerHTML = "";
+        const video = document.createElement("video");
+        video.src = videoUrl;
+        video.controls = true;
+        video.autoplay = true;
+        videoContainer.appendChild(video);
+        
+        // 显示视频预览模态框
+        videoModal.style.display = "flex";
+        
+        // 更新下载按钮
+        downloadVideoBtn.onclick = () => {
+          const link = document.createElement("a");
+          link.href = videoUrl;
+          link.download = `code-editor-recording-${new Date().getTime()}.webm`;
+          link.click();
+        };
+      };
+
+      mediaRecorder.start();
+      isRecording = true;
+      recordVideoBtn.textContent = "停止录制";
+      recordingIndicator.classList.add("active");
+    } else {
+      // 停止录制
+      mediaRecorder.stop();
+      isRecording = false;
+      recordVideoBtn.textContent = "视频录制";
+      recordingIndicator.classList.remove("active");
+      
+      // 停止所有轨道
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+  } catch (error) {
+    alert("录制失败: " + error.message);
+    isRecording = false;
+    recordVideoBtn.textContent = "视频录制";
+    recordingIndicator.classList.remove("active");
+  }
+});
+
+// 关闭视频预览模态框
+closeVideoModal.addEventListener("click", function() {
+  videoModal.style.display = "none";
+});
+
+// 点击视频模态框背景关闭
+videoModal.addEventListener("click", function(e) {
+  if (e.target === videoModal) {
+    videoModal.style.display = "none";
   }
 });
