@@ -1,69 +1,96 @@
-export function setupImageGeneration() {
-  if (!CodePoster.elements.generateImageBtn) {
-    console.error("未找到生成图片按钮");
-    return;
-  }
-
-  CodePoster.elements.generateImageBtn.addEventListener("click", async function () {
-    try {
-      // 获取当前代码和语言
-      const code = CodePoster.elements.codeInput.value;
-      const language = CodePoster.elements.languageSelect.value;
-      
-      // 创建canvas元素
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // 设置canvas尺寸
-      canvas.width = CodePoster.elements.editorContainer.offsetWidth;
-      canvas.height = CodePoster.elements.editorContainer.offsetHeight;
-      
-      // 绘制背景
-      ctx.fillStyle = '#1e1e1e';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // 绘制代码文本
-      ctx.font = '14px Consolas, monospace';
-      ctx.fillStyle = '#d4d4d4';
-      
-      // 分行绘制代码
-      const lines = code.split('\n');
-      const lineHeight = 20;
-      const padding = 15;
-      
-      lines.forEach((line, index) => {
-        ctx.fillText(line, padding, padding + (index * lineHeight));
+// 图片生成功能
+document.addEventListener("DOMContentLoaded", function () {
+  // 等待核心模块加载完成
+  setTimeout(() => {
+    if (!window.CodePoster) return;
+    
+    // 生成图片功能
+    if (CodePoster.elements.generateImageBtn) {
+      CodePoster.elements.generateImageBtn.addEventListener("click", async function () {
+        try {
+          console.log("生成图片按钮被点击");
+          
+          // 创建一个更简单的临时容器
+          const tempContainer = document.createElement("div");
+          tempContainer.style.position = "fixed";
+          tempContainer.style.left = "0";
+          tempContainer.style.top = "0";
+          tempContainer.style.width = CodePoster.elements.editorContainer.offsetWidth + "px";
+          tempContainer.style.height = (CodePoster.elements.editorContainer.offsetHeight - document.querySelector(".toolbar").offsetHeight) + "px";
+          tempContainer.style.backgroundColor = "#1e1e1e";
+          tempContainer.style.display = "flex";
+          tempContainer.style.zIndex = "-1000"; // 确保不可见
+          
+          // 克隆行号区域
+          const lineNumbersClone = CodePoster.elements.lineNumbers.cloneNode(true);
+          tempContainer.appendChild(lineNumbersClone);
+          
+          // 克隆代码显示区域
+          const codeAreaClone = document.createElement("div");
+          codeAreaClone.style.flex = "1";
+          codeAreaClone.style.backgroundColor = "#252526";
+          codeAreaClone.style.padding = "10px";
+          codeAreaClone.innerHTML = CodePoster.elements.codeDisplay.innerHTML;
+          tempContainer.appendChild(codeAreaClone);
+          
+          // 将临时容器添加到文档中
+          document.body.appendChild(tempContainer);
+          
+          // 使用更简单的html2canvas配置
+          console.log("开始生成图片");
+          const canvas = await html2canvas(tempContainer, {
+            backgroundColor: "#1e1e1e",
+            scale: 2,
+            logging: false,
+            useCORS: true
+          });
+          
+          console.log("图片生成完成");
+          
+          // 显示生成的图片
+          CodePoster.elements.imageContainer.innerHTML = "";
+          const img = document.createElement("img");
+          CodePoster.state.generatedImageUrl = canvas.toDataURL("image/png");
+          img.src = CodePoster.state.generatedImageUrl;
+          img.style.maxWidth = "100%";
+          CodePoster.elements.imageContainer.appendChild(img);
+          
+          // 显示模态框
+          CodePoster.elements.imageModal.style.display = "flex";
+          
+          // 移除临时容器
+          document.body.removeChild(tempContainer);
+        } catch (error) {
+          console.error("生成图片失败:", error);
+          alert("生成图片失败: " + error.message);
+        }
       });
-      
-      // 转换为图片
-      const imageUrl = canvas.toDataURL('image/png');
-      
-      // 显示图片预览
-      CodePoster.elements.imagePreview.src = imageUrl;
-      CodePoster.elements.imageModal.style.display = 'flex';
-      
-    } catch (error) {
-      console.error('生成图片失败:', error);
-      alert('生成图片时出错: ' + error.message);
+    } else {
+      console.error("未找到生成图片按钮");
     }
-  });
-
-  // 图片下载功能
-  CodePoster.elements.downloadBtn.addEventListener("click", function () {
-    const a = document.createElement('a');
-    a.href = CodePoster.elements.imagePreview.src;
-    a.download = `code-${new Date().getTime()}.png`;
-    a.click();
-  });
-
-  // 图片模态框关闭功能
-  CodePoster.elements.closeModal.addEventListener("click", function () {
-    CodePoster.elements.imageModal.style.display = 'none';
-  });
-
-  CodePoster.elements.imageModal.addEventListener("click", function (e) {
-    if (e.target === CodePoster.elements.imageModal) {
-      CodePoster.elements.imageModal.style.display = 'none';
-    }
-  });
-}
+    
+    // 下载图片
+    CodePoster.elements.downloadBtn.addEventListener("click", function () {
+      if (CodePoster.state.generatedImageUrl) {
+        const link = document.createElement("a");
+        link.href = CodePoster.state.generatedImageUrl;
+        link.download = `code-editor-${
+          CodePoster.elements.languageSelect.value
+        }-${new Date().getTime()}.png`;
+        link.click();
+      }
+    });
+    
+    // 关闭图片模态框
+    CodePoster.elements.closeModal.addEventListener("click", function () {
+      CodePoster.elements.imageModal.style.display = "none";
+    });
+    
+    // 点击图片模态框背景关闭
+    CodePoster.elements.imageModal.addEventListener("click", function (e) {
+      if (e.target === this) {
+        this.style.display = "none";
+      }
+    });
+  }, 100);
+});
