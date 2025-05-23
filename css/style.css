@@ -30,7 +30,7 @@ header h1 {
   color: #0e639c;
 }
 
-/* 编辑器样式 */
+/* 编辑器样式 - 重写 */
 .editor-container {
   display: flex;
   background-color: #252526;
@@ -39,6 +39,7 @@ header h1 {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   margin-bottom: 160px;
   height: 600px;
+  max-height: 600px;
 }
 
 .line-numbers {
@@ -63,16 +64,9 @@ header h1 {
 
 .code-area {
   flex: 1;
-  display: flex;
-  flex-direction: column;
   height: 100%;
   position: relative;
-}
-
-.editor {
-  flex: 1;
-  position: relative;
-  height: 100%;
+  overflow: hidden;
 }
 
 #code-input,
@@ -355,7 +349,7 @@ label {
 
 /* 收起状态样式 */
 .bottom-control-panel.collapsed {
-  transform: translateY(calc(100% - 30px));
+  transform: translateY(calc(100%));
 }
 
 /* 控制面板内容 */
@@ -376,7 +370,7 @@ label {
 .panel-toggle {
   position: absolute;
   top: -30px;
-  left: 50%;
+  right: 0;
   transform: translateX(-50%);
   width: 80px;
   height: 30px;
@@ -519,7 +513,27 @@ select.control-input {
   background-size: 16px;
 }
 
-/* 编辑器容器边距调整 */
+/* 编辑器样式 */
 .editor-container {
+  display: flex;
+  background-color: #252526;
+  border-radius: 8px;
+  overflow: hidden; /* 不要使用 overflow: auto */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   margin-bottom: 160px;
+  height: 600px;
+  max-height: 600px;
+}
+
+.code-area {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  overflow: hidden; /* 确保外层容器不显示滚动条 */
+}
+
+/* 确保只有内部元素显示滚动条 */
+#code-input,
+#code-display {
+  overflow: auto;
 }
