@@ -288,12 +288,7 @@ function setupVideoRecording() {
       
       // 录制停止时的处理
       // 在录制完成的地方触发事件
-      CodePoster.state.mediaRecorder.onstop = function() {
-        // ... existing code ...
-        
-        // 触发录制完成事件
-        document.dispatchEvent(new Event('recordingComplete'));
-        
+      CodePoster.state.mediaRecorder.onstop = async function() {
         // 停止所有轨道
         stream.getTracks().forEach(track => track.stop());
         
@@ -311,10 +306,67 @@ function setupVideoRecording() {
         // 隐藏取消录制按钮
         cancelRecordBtn.style.display = "none";
         
+        // 创建视频 Blob
+        const blob = new Blob(CodePoster.state.recordedChunks, {
+          type: "video/webm"
+        });
+        
+        // 检查视频时长
+        const videoElement = document.createElement('video');
+        videoElement.src = URL.createObjectURL(blob);
+        
+        await new Promise(resolve => {
+          videoElement.onloadedmetadata = () => {
+            resolve();
+          };
+        });
+        
+        // 如果视频时长小于1秒，显示提示
+        if (videoElement.duration < 1) {
+          alert("录制时间太短，请尝试录制更长的内容");
+          // 清理资源
+          URL.revokeObjectURL(videoElement.src);
+          return;
+        }
+        
+        // 显示预览模态框
+        const videoModal = CodePoster.elements.videoModal;
+        const videoContainer = document.getElementById("video-container");
+        
+        if (videoModal && videoContainer) {
+          // 清空之前的内容
+          videoContainer.innerHTML = "";
+          
+          // 创建新的视频元素
+          const videoPreview = document.createElement("video");
+          videoPreview.src = URL.createObjectURL(blob);
+          videoPreview.controls = true;
+          videoPreview.style.maxWidth = "100%";
+          
+          videoContainer.appendChild(videoPreview);
+          videoModal.style.display = "flex";
+          
+          // 设置下载按钮事件
+          const downloadBtn = document.getElementById("download-video-btn");
+          if (downloadBtn) {
+            downloadBtn.onclick = function() {
+              const a = document.createElement("a");
+              a.href = videoPreview.src;
+              a.download = "code-recording.webm";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            };
+          }
+        }
+        
         // 恢复原始代码
         CodePoster.elements.codeInput.value = originalCode;
         const inputEvent = new Event('input', { bubbles: true });
         CodePoster.elements.codeInput.dispatchEvent(inputEvent);
+        
+        // 触发录制完成事件
+        document.dispatchEvent(new Event('recordingComplete'));
       };
       
       // 开始录制
