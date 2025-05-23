@@ -26,59 +26,55 @@ function setupVideoRecording() {
     }
   }
   
-  // ... existing code ...
+  // 确保视频模态框元素存在
+  if (!CodePoster.elements.videoModal) {
+    console.error("未找到视频模态框");
+    // 尝试查找视频模态框
+    CodePoster.elements.videoModal = document.getElementById("video-modal");
+    if (!CodePoster.elements.videoModal) {
+      console.error("无法找到视频模态框元素");
+    } else {
+      console.log("已找到视频模态框元素");
+    }
+  }
   
-  // 创建悬浮控制面板
-  const floatingPanel = document.createElement("div");
-  floatingPanel.className = "floating-control-panel";
-  floatingPanel.style.position = "fixed";
-  floatingPanel.style.left = "0";
-  floatingPanel.style.bottom = "0";
-  floatingPanel.style.width = "100%";
-  floatingPanel.style.backgroundColor = "#2d2d2d";
-  floatingPanel.style.border = "1px solid #444";
-  floatingPanel.style.borderBottom = "none";
-  floatingPanel.style.borderRadius = "5px 5px 0 0";
-  floatingPanel.style.padding = "10px";
-  floatingPanel.style.boxShadow = "0 -2px 10px rgba(0, 0, 0, 0.3)";
-  floatingPanel.style.zIndex = "1000";
-  floatingPanel.style.transition = "transform 0.3s ease";
-  floatingPanel.style.display = "flex";
-  floatingPanel.style.alignItems = "center";
-  floatingPanel.style.justifyContent = "center";
+  // 确保视频容器元素存在
+  if (!CodePoster.elements.videoContainer) {
+    console.error("未找到视频容器");
+    // 尝试查找视频容器
+    CodePoster.elements.videoContainer = document.getElementById("video-container");
+    if (!CodePoster.elements.videoContainer) {
+      console.error("无法找到视频容器元素");
+    } else {
+      console.log("已找到视频容器元素");
+    }
+  }
   
-  // 创建收起/展开按钮
-  const toggleButton = document.createElement("button");
-  toggleButton.className = "toggle-panel-btn";
-  toggleButton.innerHTML = "▼";
-  toggleButton.style.position = "absolute";
-  toggleButton.style.right = "10px";
-  toggleButton.style.top = "-25px";
-  toggleButton.style.width = "30px";
-  toggleButton.style.height = "25px";
-  toggleButton.style.backgroundColor = "#2d2d2d";
-  toggleButton.style.border = "1px solid #444";
-  toggleButton.style.borderBottom = "none";
-  toggleButton.style.borderRadius = "5px 5px 0 0";
-  toggleButton.style.cursor = "pointer";
-  toggleButton.style.color = "#ccc";
-  toggleButton.style.fontSize = "12px";
-  toggleButton.style.display = "flex";
-  toggleButton.style.alignItems = "center";
-  toggleButton.style.justifyContent = "center";
+  // 确保下载视频按钮元素存在
+  if (!CodePoster.elements.downloadVideoBtn) {
+    console.error("未找到下载视频按钮");
+    // 尝试查找下载视频按钮
+    CodePoster.elements.downloadVideoBtn = document.getElementById("download-video-btn");
+    if (!CodePoster.elements.downloadVideoBtn) {
+      console.error("无法找到下载视频按钮元素");
+    } else {
+      console.log("已找到下载视频按钮元素");
+    }
+  }
   
-  // 创建录制按钮容器
-  const recordBtnContainer = document.createElement("div");
-  recordBtnContainer.style.display = "flex";
-  recordBtnContainer.style.alignItems = "center";
-  recordBtnContainer.style.marginRight = "20px";
+  // 确保关闭视频模态框按钮元素存在
+  if (!CodePoster.elements.closeVideoModal) {
+    console.error("未找到关闭视频模态框按钮");
+    // 尝试查找关闭视频模态框按钮
+    CodePoster.elements.closeVideoModal = document.getElementById("close-video-modal");
+    if (!CodePoster.elements.closeVideoModal) {
+      console.error("无法找到关闭视频模态框按钮元素");
+    } else {
+      console.log("已找到关闭视频模态框按钮元素");
+    }
+  }
   
-  // 克隆原始录制按钮
-  const newRecordBtn = document.createElement("button");
-  newRecordBtn.id = "floating-record-video-btn";
-  newRecordBtn.className = "btn";
-  newRecordBtn.innerHTML = CodePoster.elements.recordVideoBtn.innerHTML;
-  newRecordBtn.style.backgroundColor = "#4caf50";
+  console.log("找到视频录制按钮，开始设置");
   
   // 创建取消录制按钮
   const cancelRecordBtn = document.createElement("button");
@@ -95,15 +91,15 @@ function setupVideoRecording() {
   cancelRecordBtn.style.backgroundColor = "#d32f2f";
   cancelRecordBtn.style.display = "none";
   
-  recordBtnContainer.appendChild(newRecordBtn);
-  recordBtnContainer.appendChild(cancelRecordBtn);
+  // 将取消按钮添加到工具栏
+  CodePoster.elements.recordVideoBtn.parentNode.appendChild(cancelRecordBtn);
   
   // 创建速度设置控件
   const speedControlContainer = document.createElement("div");
   speedControlContainer.className = "speed-control";
-  speedControlContainer.style.display = "flex";
+  speedControlContainer.style.display = "inline-flex";
   speedControlContainer.style.alignItems = "center";
-  speedControlContainer.style.marginRight = "20px";
+  speedControlContainer.style.marginLeft = "10px";
   
   const speedLabel = document.createElement("label");
   speedLabel.textContent = "打字速度: ";
@@ -111,6 +107,7 @@ function setupVideoRecording() {
   speedLabel.style.fontSize = "12px";
   speedLabel.style.color = "#ccc";
   
+  // 创建数字输入框替代滑动条
   const speedInput = document.createElement("input");
   speedInput.type = "number";
   speedInput.min = "10";
@@ -130,15 +127,31 @@ function setupVideoRecording() {
   speedUnit.style.fontSize = "12px";
   speedUnit.style.color = "#ccc";
   
+  speedInput.addEventListener("input", function() {
+    // 限制输入范围
+    if (parseInt(this.value) < 10) this.value = 10;
+    if (parseInt(this.value) > 500) this.value = 500;
+    
+    // 保存速度设置到全局状态
+    if (!CodePoster.state.typingSpeed) {
+      CodePoster.state.typingSpeed = {};
+    }
+    CodePoster.state.typingSpeed.value = parseInt(this.value);
+  });
+  
   speedControlContainer.appendChild(speedLabel);
   speedControlContainer.appendChild(speedInput);
   speedControlContainer.appendChild(speedUnit);
   
+  // 将速度控制添加到工具栏
+  CodePoster.elements.recordVideoBtn.parentNode.appendChild(speedControlContainer);
+  
   // 创建编辑器高度设置控件
   const heightControlContainer = document.createElement("div");
   heightControlContainer.className = "height-control";
-  heightControlContainer.style.display = "flex";
+  heightControlContainer.style.display = "inline-flex";
   heightControlContainer.style.alignItems = "center";
+  heightControlContainer.style.marginLeft = "10px";
   
   const heightLabel = document.createElement("label");
   heightLabel.textContent = "编辑器高度: ";
@@ -165,49 +178,6 @@ function setupVideoRecording() {
   heightUnit.style.fontSize = "12px";
   heightUnit.style.color = "#ccc";
   
-  heightControlContainer.appendChild(heightLabel);
-  heightControlContainer.appendChild(heightInput);
-  heightControlContainer.appendChild(heightUnit);
-  
-  // 组装控制面板
-  floatingPanel.appendChild(recordBtnContainer);
-  floatingPanel.appendChild(speedControlContainer);
-  floatingPanel.appendChild(heightControlContainer);
-  floatingPanel.appendChild(toggleButton);
-  
-  // 添加到文档
-  document.body.appendChild(floatingPanel);
-  
-  // 收起/展开功能
-  let isPanelCollapsed = false;
-  toggleButton.addEventListener("click", function() {
-    if (isPanelCollapsed) {
-      // 展开面板
-      floatingPanel.style.transform = "translateY(0)";
-      toggleButton.innerHTML = "▼";
-      isPanelCollapsed = false;
-    } else {
-      // 收起面板
-      floatingPanel.style.transform = "translateY(100%)";
-      toggleButton.innerHTML = "▲";
-      isPanelCollapsed = true;
-    }
-  });
-  
-  // 速度输入事件
-  speedInput.addEventListener("input", function() {
-    // 限制输入范围
-    if (parseInt(this.value) < 10) this.value = 10;
-    if (parseInt(this.value) > 500) this.value = 500;
-    
-    // 保存速度设置到全局状态
-    if (!CodePoster.state.typingSpeed) {
-      CodePoster.state.typingSpeed = {};
-    }
-    CodePoster.state.typingSpeed.value = parseInt(this.value);
-  });
-  
-  // 高度输入事件
   heightInput.addEventListener("input", function() {
     // 限制输入范围
     if (parseInt(this.value) < 0) this.value = 0;
@@ -224,6 +194,13 @@ function setupVideoRecording() {
       window.applyEditorHeight();
     }
   });
+  
+  heightControlContainer.appendChild(heightLabel);
+  heightControlContainer.appendChild(heightInput);
+  heightControlContainer.appendChild(heightUnit);
+  
+  // 将高度控制添加到工具栏
+  CodePoster.elements.recordVideoBtn.parentNode.appendChild(heightControlContainer);
   
   // 模拟打字效果函数（如果 typingSimulator.js 未加载）
   if (!window.simulateTyping) {
@@ -276,7 +253,8 @@ function setupVideoRecording() {
   }
   
   // 录制视频按钮点击事件
-  newRecordBtn.addEventListener("click", async function() {
+  console.log("添加视频录制按钮点击事件");
+  CodePoster.elements.recordVideoBtn.addEventListener("click", async function() {
     console.log("视频录制按钮被点击");
     try {
       // 检查浏览器支持
@@ -359,7 +337,7 @@ function setupVideoRecording() {
         }
         
         // 恢复录制按钮显示
-        newRecordBtn.style.display = "inline-flex";
+        CodePoster.elements.recordVideoBtn.style.display = "inline-flex";
         
         // 隐藏取消录制按钮
         cancelRecordBtn.style.display = "none";
@@ -416,12 +394,6 @@ function setupVideoRecording() {
     }
   });
   
-  // 原始录制按钮点击事件 - 重定向到新按钮
-  CodePoster.elements.recordVideoBtn.addEventListener("click", function() {
-    // 触发新按钮的点击事件
-    newRecordBtn.click();
-  });
-  
   // 关闭视频模态框
   if (CodePoster.elements.closeVideoModal) {
     CodePoster.elements.closeVideoModal.addEventListener("click", function() {
@@ -438,20 +410,6 @@ function setupVideoRecording() {
         this.style.display = "none";
       }
     });
-  }
-  
-  // 隐藏原始工具栏中的控件
-  // 这里我们不删除原始按钮，只是隐藏它，因为其他代码可能依赖它
-  CodePoster.elements.recordVideoBtn.style.display = "none";
-  
-  // 查找并隐藏原始工具栏中的其他控件
-  const toolbar = CodePoster.elements.recordVideoBtn.parentNode;
-  if (toolbar) {
-    const speedControl = toolbar.querySelector(".speed-control");
-    if (speedControl) speedControl.style.display = "none";
-    
-    const heightControl = toolbar.querySelector(".height-control");
-    if (heightControl) heightControl.style.display = "none";
   }
 }
 
