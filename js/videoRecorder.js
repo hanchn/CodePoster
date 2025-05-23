@@ -163,7 +163,7 @@ function setupVideoRecording() {
   heightInput.type = "number";
   heightInput.min = "0";
   heightInput.max = "1000";
-  heightInput.value = "0";
+  heightInput.value = "600"; // 修改默认值为600
   heightInput.style.width = "50px";
   heightInput.style.backgroundColor = "#333";
   heightInput.style.color = "#ccc";
