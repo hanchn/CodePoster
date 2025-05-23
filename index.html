@@ -43,12 +43,9 @@
 
       <!-- 底部功能控制栏 -->
       <div class="bottom-control-panel" id="bottom-control-panel">
-        <!-- 收起/展开按钮 -->
-        <div class="panel-toggle" id="panel-toggle">
+        <div class="panel-toggle">
           <button class="toggle-btn" id="toggle-btn">▼</button>
         </div>
-        
-        <!-- 功能控制面板 -->
         <div class="control-panel-content">
           <div class="panel-row">
             <div class="control-group">
@@ -62,17 +59,24 @@
                 <option value="plaintext">Plain Text</option>
               </select>
             </div>
-            
+
             <div class="control-group">
               <label for="font-size-input">字体大小:</label>
-              <input type="number" id="font-size-input" class="control-input" min="10" max="24" value="14">
+              <input
+                type="number"
+                id="font-size-input"
+                class="control-input"
+                min="10"
+                max="24"
+                value="14"
+              />
             </div>
-            
+
             <div class="control-group">
-              <input type="checkbox" id="wrap-toggle">
+              <input type="checkbox" id="wrap-toggle" />
               <label for="wrap-toggle">自动换行</label>
             </div>
-            
+
             <div class="control-group">
               <label for="theme-select">主题:</label>
               <select id="theme-select" class="control-input">
@@ -81,7 +85,7 @@
               </select>
             </div>
           </div>
-          
+
           <div class="panel-row">
             <div class="control-group">
               <button id="format-btn" class="btn">格式化代码</button>
@@ -90,17 +94,31 @@
               <button id="record-video-btn" class="btn">视频录制</button>
             </div>
           </div>
-          
+
           <div class="panel-row">
             <div class="control-group">
               <label for="typing-speed">打字速度:</label>
-              <input type="number" id="typing-speed" class="control-input" min="10" max="500" value="50">
+              <input
+                type="number"
+                id="typing-speed"
+                class="control-input"
+                min="10"
+                max="500"
+                value="50"
+              />
               <span class="unit">ms</span>
             </div>
-            
+
             <div class="control-group">
               <label for="editor-height">编辑器高度:</label>
-              <input type="number" id="editor-height" class="control-input" min="0" max="1000" value="0">
+              <input
+                type="number"
+                id="editor-height"
+                class="control-input"
+                min="0"
+                max="1000"
+                value="0"
+              />
               <span class="unit">px</span>
             </div>
           </div>

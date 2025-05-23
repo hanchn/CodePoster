@@ -287,43 +287,12 @@ function setupVideoRecording() {
       };
       
       // 录制停止时的处理
+      // 在录制完成的地方触发事件
       CodePoster.state.mediaRecorder.onstop = function() {
-        console.log("录制停止");
-        // 只有在有录制内容时才处理
-        if (CodePoster.state.recordedChunks && CodePoster.state.recordedChunks.length > 0) {
-          console.log("处理录制内容");
-          // 创建视频Blob
-          const blob = new Blob(CodePoster.state.recordedChunks, {
-            type: "video/webm"
-          });
-          
-          // 显示录制的视频
-          const videoURL = URL.createObjectURL(blob);
-          const video = document.createElement("video");
-          video.src = videoURL;
-          video.controls = true;
-          video.style.maxWidth = "100%";
-          
-          if (CodePoster.elements.videoContainer) {
-            CodePoster.elements.videoContainer.innerHTML = "";
-            CodePoster.elements.videoContainer.appendChild(video);
-            
-            // 显示视频模态框
-            if (CodePoster.elements.videoModal) {
-              CodePoster.elements.videoModal.style.display = "flex";
-            }
-            
-            // 下载视频按钮事件
-            if (CodePoster.elements.downloadVideoBtn) {
-              CodePoster.elements.downloadVideoBtn.onclick = function() {
-                const a = document.createElement("a");
-                a.href = videoURL;
-                a.download = `code-recording-${new Date().getTime()}.webm`;
-                a.click();
-              };
-            }
-          }
-        }
+        // ... existing code ...
+        
+        // 触发录制完成事件
+        document.dispatchEvent(new Event('recordingComplete'));
         
         // 停止所有轨道
         stream.getTracks().forEach(track => track.stop());

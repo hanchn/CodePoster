@@ -280,7 +280,7 @@ label {
   padding: 0 !important;
 }
 
-/* 底部控制面板样式优化 */
+/* 底部控制面板样式 */
 .bottom-control-panel {
   position: fixed;
   left: 0;
@@ -290,30 +290,42 @@ label {
   border-top: 1px solid #444;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  transition: all 0.3s ease;
-  transform: translateY(0);
+  transition: transform 0.3s ease;
 }
 
+/* 收起状态样式 */
 .bottom-control-panel.collapsed {
   transform: translateY(calc(100% - 30px));
 }
 
-/* 面板切换按钮优化 */
+/* 控制面板内容 */
+.control-panel-content {
+  padding: 15px 20px;
+  background-color: #2d2d2d;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.bottom-control-panel.collapsed .control-panel-content {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* 面板切换按钮样式 */
 .panel-toggle {
   position: absolute;
   top: -30px;
-  right: 20px;
-  width: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
   height: 30px;
   background-color: #2d2d2d;
   border: 1px solid #444;
   border-bottom: none;
-  border-radius: 5px 5px 0 0;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
 }
 
 .toggle-btn {
@@ -327,26 +339,35 @@ label {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.bottom-control-panel.collapsed .toggle-btn {
-  transform: rotate(180deg);
+.toggle-btn:hover {
+  background-color: #333;
+  color: #fff;
 }
 
-/* 控制面板内容布局优化 */
-.control-panel-content {
-  padding: 15px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
+/* 控制面板内容布局 */
 .panel-row {
   display: flex;
   align-items: center;
   gap: 20px;
-  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.panel-row:last-child {
+  margin-bottom: 0;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 调整编辑器容器边距 */
+.editor-container {
+  margin-bottom: 200px;
 }
 
 .control-group {
@@ -375,7 +396,7 @@ label {
 .control-input:focus {
   border-color: #777;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
 /* 标签样式优化 */
