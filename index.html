@@ -24,6 +24,7 @@
         <p>一个简洁、美观的代码编辑器和展示工具</p>
       </header>
 
+      <!-- 编辑器主体 -->
       <div class="editor-container" id="editor-container">
         <div class="line-numbers" id="line-numbers"></div>
         <div class="code-area">
@@ -37,100 +38,70 @@
               </div>
             </div>
           </div>
-          <div class="toolbar">
-            <div class="toolbar-row">
-              <div class="language-selector">
-                <label for="language-select">语言:</label>
-                <select id="language-select">
-                  <option value="javascript">JavaScript</option>
-                  <option value="python">Python</option>
-                  <option value="java">Java</option>
-                  <option value="html">HTML</option>
-                  <option value="css">CSS</option>
-                  <option value="plaintext">Plain Text</option>
-                </select>
-              </div>
-              <div class="font-size-control">
-                <label for="font-size-input">字体大小:</label>
-                <input
-                  type="number"
-                  id="font-size-input"
-                  min="10"
-                  max="24"
-                  value="14"
-                />
-              </div>
-              <div class="wrap-toggle">
-                <input type="checkbox" id="wrap-toggle" />
-                <label for="wrap-toggle">自动换行</label>
-              </div>
-              <div class="theme-selector">
-                <label for="theme-select">主题:</label>
-                <select id="theme-select">
-                  <option value="dark">深色</option>
-                  <option value="light">浅色</option>
-                </select>
-              </div>
+        </div>
+      </div>
+
+      <!-- 底部功能控制栏 -->
+      <div class="bottom-control-panel" id="bottom-control-panel">
+        <!-- 收起/展开按钮 -->
+        <div class="panel-toggle" id="panel-toggle">
+          <button class="toggle-btn" id="toggle-btn">▼</button>
+        </div>
+        
+        <!-- 功能控制面板 -->
+        <div class="control-panel-content">
+          <div class="panel-row">
+            <div class="control-group">
+              <label for="language-select">语言:</label>
+              <select id="language-select" class="control-input">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="plaintext">Plain Text</option>
+              </select>
             </div>
-            <div class="toolbar-row">
-              <button id="format-btn" class="btn">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="14"
-                  height="14"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  fill="none"
-                >
-                  <path d="M21 10H3M21 6H3M21 14H3M21 18H3"></path>
-                </svg>
-                格式化代码
-              </button>
-              <button id="copy-btn" class="btn">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="14"
-                  height="14"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  fill="none"
-                >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path
-                    d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
-                  ></path>
-                </svg>
-                复制代码
-              </button>
-              <button id="generate-image-btn" class="btn">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="14"
-                  height="14"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  fill="none"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-                生成图片
-              </button>
-              <button id="record-video-btn" class="btn">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="14"
-                  height="14"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  fill="none"
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                视频录制
-              </button>
+            
+            <div class="control-group">
+              <label for="font-size-input">字体大小:</label>
+              <input type="number" id="font-size-input" class="control-input" min="10" max="24" value="14">
+            </div>
+            
+            <div class="control-group">
+              <input type="checkbox" id="wrap-toggle">
+              <label for="wrap-toggle">自动换行</label>
+            </div>
+            
+            <div class="control-group">
+              <label for="theme-select">主题:</label>
+              <select id="theme-select" class="control-input">
+                <option value="dark">深色</option>
+                <option value="light">浅色</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="panel-row">
+            <div class="control-group">
+              <button id="format-btn" class="btn">格式化代码</button>
+              <button id="copy-btn" class="btn">复制代码</button>
+              <button id="generate-image-btn" class="btn">生成图片</button>
+              <button id="record-video-btn" class="btn">视频录制</button>
+            </div>
+          </div>
+          
+          <div class="panel-row">
+            <div class="control-group">
+              <label for="typing-speed">打字速度:</label>
+              <input type="number" id="typing-speed" class="control-input" min="10" max="500" value="50">
+              <span class="unit">ms</span>
+            </div>
+            
+            <div class="control-group">
+              <label for="editor-height">编辑器高度:</label>
+              <input type="number" id="editor-height" class="control-input" min="0" max="1000" value="0">
+              <span class="unit">px</span>
             </div>
           </div>
         </div>
@@ -139,7 +110,7 @@
       <footer></footer>
     </div>
 
-    <!-- 图片预览模态框 -->
+    <!-- 模态框 -->
     <div class="modal" id="image-modal">
       <div class="modal-content">
         <span class="close-modal" id="close-modal">&times;</span>

@@ -279,3 +279,166 @@ label {
   background: transparent !important;
   padding: 0 !important;
 }
+
+/* 底部控制面板样式优化 */
+.bottom-control-panel {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #2d2d2d;
+  border-top: 1px solid #444;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.bottom-control-panel.collapsed {
+  transform: translateY(calc(100% - 30px));
+}
+
+/* 面板切换按钮优化 */
+.panel-toggle {
+  position: absolute;
+  top: -30px;
+  right: 20px;
+  width: 60px;
+  height: 30px;
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn {
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.bottom-control-panel.collapsed .toggle-btn {
+  transform: rotate(180deg);
+}
+
+/* 控制面板内容布局优化 */
+.control-panel-content {
+  padding: 15px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.panel-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+}
+
+/* 输入控件样式优化 */
+.control-input {
+  background-color: #333;
+  color: #ccc;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
+  min-width: 80px;
+  transition: all 0.2s ease;
+}
+
+.control-input:hover {
+  border-color: #666;
+}
+
+.control-input:focus {
+  border-color: #777;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+}
+
+/* 标签样式优化 */
+label {
+  color: #ccc;
+  font-size: 13px;
+  user-select: none;
+}
+
+/* 单位标签样式 */
+.unit {
+  color: #999;
+  font-size: 13px;
+  margin-left: 4px;
+}
+
+/* 按钮样式优化 */
+.btn {
+  background-color: #444;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: #555;
+}
+
+.btn:active {
+  background-color: #333;
+}
+
+/* 复选框样式优化 */
+.wrap-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* 下拉框样式优化 */
+select.control-input {
+  padding-right: 24px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 16px;
+}
+
+/* 编辑器容器边距调整 */
+.editor-container {
+  margin-bottom: 160px;
+}
