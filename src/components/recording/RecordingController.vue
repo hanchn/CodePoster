@@ -31,11 +31,15 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ScreenRecorder } from '@/utils/screenRecorder'
 import { CodeTypingEffect } from '@/utils/codeTyping'
+import { useEditorStore } from '@/stores/editor'
 
 const emit = defineEmits(['recording-started', 'recording-stopped'])
+
+// 添加这一行来实例化 editorStore
+const editorStore = useEditorStore()
 
 const isRecording = ref(false)
 const showPreview = ref(false)
@@ -48,12 +52,13 @@ const screenRecorder = ref(new ScreenRecorder())
 let codeTypingEffect = null
 
 // 示例代码 - 可以从外部传入
-const sampleCode = `function fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
-}
-
-console.log(fibonacci(10));`
+// 删除预设的示例代码
+// const sampleCode = `function fibonacci(n) {
+//   if (n <= 1) return n;
+//   return fibonacci(n - 1) + fibonacci(n - 2);
+// }
+// 
+// console.log(fibonacci(10));`
 
 // 开始录制
 const startRecording = async () => {
@@ -65,7 +70,7 @@ const startRecording = async () => {
     }
 
     // 获取 Monaco Editor 实例
-    const monacoEditor = window.monacoEditorInstance // 需要在 CodeEditor.vue 中暴露
+    const monacoEditor = window.monacoEditorInstance
     if (!monacoEditor) {
       throw new Error('未找到编辑器实例')
     }
@@ -78,14 +83,17 @@ const startRecording = async () => {
     // 延迟一秒后开始自动输入代码
     setTimeout(async () => {
       if (isRecording.value) {
+        // 获取用户当前输入的代码内容
+        const userCode = editorStore.code
+        
         codeTypingEffect = new CodeTypingEffect(monacoEditor, {
-          typingSpeed: 80, // 稍慢一点，更真实
-          pauseOnNewLine: 300,
-          pauseOnSpecialChar: 150
+          typingSpeed: editorStore.typingSpeed, // 使用store中的速度设置
+          pauseOnNewLine: editorStore.typingSpeed * 3, // 换行暂停时间为输入速度的3倍
+          pauseOnSpecialChar: editorStore.typingSpeed * 1.5 // 特殊字符暂停时间为输入速度的1.5倍
         })
         
         isTyping.value = true
-        await codeTypingEffect.startTyping(sampleCode)
+        await codeTypingEffect.startTyping(userCode) // 使用用户输入的代码
         isTyping.value = false
       }
     }, 1000)
