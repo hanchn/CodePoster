@@ -77,6 +77,7 @@
 import { ref } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useEditorStore } from '@/stores/editor'
+import html2canvas from 'html2canvas'
 
 const themeStore = useThemeStore()
 const editorStore = useEditorStore()
@@ -90,8 +91,39 @@ const closeDrawer = () => {
   isOpen.value = false
 }
 
-const generateImage = () => {
-  console.log('生成图片功能待实现')
+const generateImage = async () => {
+  try {
+    // 查找编辑器容器元素
+    const editorElement = document.querySelector('.editor-container')
+    if (!editorElement) {
+      alert('未找到编辑器元素')
+      return
+    }
+
+    // 生成截图
+    const canvas = await html2canvas(editorElement, {
+      backgroundColor: null, // 保持透明背景
+      scale: 2, // 提高图片质量
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    })
+
+    // 创建下载链接
+    const link = document.createElement('a')
+    link.download = `code-screenshot-${Date.now()}.png`
+    link.href = canvas.toDataURL('image/png')
+    
+    // 触发下载
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    console.log('图片生成成功')
+  } catch (error) {
+    console.error('生成图片失败:', error)
+    alert('生成图片失败，请重试')
+  }
 }
 
 const startRecording = () => {

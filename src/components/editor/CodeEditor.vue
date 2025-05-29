@@ -90,6 +90,6 @@ watch(
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  padding: 20px; /* 添加容器内边距 */
+  padding: 10px; /* 添加容器内边距 */
 }
 </style>
