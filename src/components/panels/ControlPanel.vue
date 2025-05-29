@@ -44,25 +44,25 @@
         <label>编辑器宽度:</label>
         <input 
           v-model.number="editorStore.editorWidth" 
-          type="range" 
-          min="600" 
-          max="1400" 
-          step="50" 
-          class="range-input"
+          type="number" 
+          min="0" 
+          max="2000" 
+          placeholder="800"
+          class="number-input"
         >
-        <span>{{ editorStore.editorWidth }}px</span>
+        <span class="unit">px (0=全屏)</span>
       </div>
       <div class="control-group">
         <label>编辑器高度:</label>
         <input 
           v-model.number="editorStore.editorHeight" 
-          type="range" 
-          min="400" 
-          max="1000" 
-          step="50" 
-          class="range-input"
+          type="number" 
+          min="0" 
+          max="1200" 
+          placeholder="400"
+          class="number-input"
         >
-        <span>{{ editorStore.editorHeight }}px</span>
+        <span class="unit">px (0=全屏)</span>
       </div>
     </div>
     
@@ -160,6 +160,27 @@ const startRecording = () => {
 .range-input {
   flex: 1;
   margin: 0 0.5rem;
+}
+
+.number-input {
+  width: 80px;
+  padding: 0.4rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  text-align: center;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+}
+
+.unit {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  min-width: 80px;
 }
 
 .button-group {

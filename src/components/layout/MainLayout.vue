@@ -8,12 +8,12 @@
     
     <!-- 浮动工具栏 -->
     <div class="floating-panel" :class="{ 'panel-hidden': !panelVisible }">
+      <div class="panel-content">
+        <ControlPanel />
+      </div>
       <button class="panel-toggle" @click="togglePanel">
         {{ panelVisible ? '❯' : '❮' }}
       </button>
-      <div class="panel-content" v-show="panelVisible">
-        <ControlPanel />
-      </div>
     </div>
   </div>
 </template>
@@ -67,8 +67,17 @@ const togglePanel = () => {
   transition: transform 0.3s ease;
   
   &.panel-hidden {
-    transform: translateX(260px); /* 调整隐藏距离，只露出切换按钮 */
+    transform: translateX(300px); /* 隐藏整个面板宽度 */
   }
+}
+
+.panel-content {
+  width: 300px;
+  height: 100vh;
+  background-color: var(--panel-bg);
+  border-left: 1px solid var(--border-color);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
 }
 
 .panel-toggle {
@@ -85,22 +94,19 @@ const togglePanel = () => {
   justify-content: center;
   font-size: 16px;
   transition: all 0.3s ease;
-  margin-top: 50vh;
+  position: absolute;
+  left: -40px; /* 紧贴面板左边缘 */
+  top: 50%;
   transform: translateY(-50%);
-  position: relative;
-  z-index: 1001; /* 确保按钮始终可见 */
+  z-index: 1001;
   
   &:hover {
     background-color: var(--hover-bg);
   }
 }
 
-.panel-content {
-  width: 300px;
-  height: 100vh;
-  background-color: var(--panel-bg);
-  border-left: 1px solid var(--border-color);
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
+/* 当面板隐藏时，按钮保持可见 */
+.floating-panel.panel-hidden .panel-toggle {
+  left: -40px; /* 保持在相对面板的位置 */
 }
 </style>

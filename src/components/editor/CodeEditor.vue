@@ -1,185 +1,95 @@
 <template>
   <div class="code-editor">
-    <div ref="editorContainer" class="editor-container"></div>
+    <div 
+      ref="editorContainer" 
+      class="editor-container"
+      :style="{
+        width: editorStore.actualEditorWidth,
+        height: editorStore.actualEditorHeight
+      }"
+    ></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue'
-import { useEditorStore } from '@/stores/editor'
+import { ref, onMounted, watch } from 'vue'
 import * as monaco from 'monaco-editor'
+import { useEditorStore } from '@/stores/editor'
 
-// Disable workers to avoid the error
-window.MonacoEnvironment = {
-  getWorkerUrl: () => {
-    return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-      self.MonacoEnvironment = {
-        baseUrl: 'https://unpkg.com/monaco-editor@latest/min/'
-      };
-      importScripts('https://unpkg.com/monaco-editor@latest/min/vs/base/worker/workerMain.js');
-    `)}`
-  }
-}
-
-const editorContainer = ref(null)
 const editorStore = useEditorStore()
+const editorContainer = ref(null)
 let editor = null
 
-// 检查当前语言是否支持格式化
-const canFormat = computed(() => {
-  const supportedLanguages = ['javascript', 'typescript', 'json', 'html', 'css', 'scss', 'less']
-  return supportedLanguages.includes(editorStore.language)
-})
-
 onMounted(() => {
-  if (editorContainer.value) {
-    editor = monaco.editor.create(editorContainer.value, {
-      value: editorStore.code,
-      language: editorStore.language,
-      theme: 'vs-dark',
-      fontSize: editorStore.fontSize,
-      automaticLayout: true,
-      wordWrap: editorStore.lineWrap ? 'on' : 'off',
-      lineNumbers: 'on',
-      lineNumbersMinChars: 4,
-      glyphMargin: false,
-      folding: true,
-      lineDecorationsWidth: 10,
-      lineHeight: 22,
-      renderLineHighlight: 'line',
-      selectOnLineNumbers: true,
-      minimap: { enabled: false },
-      scrollBeyondLastLine: false,
-      scrollbar: {
-        vertical: 'visible',
-        horizontal: 'visible',
-        useShadows: false,
-        verticalHasArrows: false,
-        horizontalHasArrows: false,
-        verticalScrollbarSize: 14,
-        horizontalScrollbarSize: 14
-      },
-      overviewRulerBorder: false,
-      overviewRulerLanes: 0,
-      hideCursorInOverviewRuler: true,
-      quickSuggestions: true,
-      parameterHints: { enabled: true },
-      suggestOnTriggerCharacters: true,
-      acceptSuggestionOnEnter: 'on',
-      tabCompletion: 'on',
-      wordBasedSuggestions: true,
-      formatOnPaste: true,
-      formatOnType: true
-    })
-
-    editor.onDidChangeModelContent(() => {
-      editorStore.updateCode(editor.getValue())
-    })
-  }
-})
-
-watch(() => editorStore.language, (newLanguage) => {
-  if (editor) {
-    monaco.editor.setModelLanguage(editor.getModel(), newLanguage)
-  }
-})
-
-watch(() => editorStore.fontSize, (newSize) => {
-  if (editor) {
-    editor.updateOptions({ fontSize: newSize })
-  }
-})
-
-watch(() => editorStore.lineWrap, (newWrap) => {
-  if (editor) {
-    editor.updateOptions({ wordWrap: newWrap ? 'on' : 'off' })
-  }
-})
-
-// 格式化代码
-const formatCode = async () => {
-  if (editor && canFormat.value) {
-    try {
-      await editor.getAction('editor.action.formatDocument').run()
-    } catch (error) {
-      console.warn('格式化失败:', error)
+  // 禁用 Monaco Editor 的 worker
+  self.MonacoEnvironment = {
+    getWorkerUrl: function (moduleId, label) {
+      return 'data:text/javascript;charset=utf-8,' + encodeURIComponent(`
+        self.MonacoEnvironment = {
+          baseUrl: 'https://unpkg.com/monaco-editor@latest/min/'
+        };
+        importScripts('https://unpkg.com/monaco-editor@latest/min/vs/base/worker/workerMain.js');
+      `)
     }
   }
-}
 
-// 切换自动换行
-const toggleWrap = () => {
-  editorStore.toggleLineWrap()
-}
+  editor = monaco.editor.create(editorContainer.value, {
+    ...editorStore.editorOptions,
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+    wordWrap: 'on', // 启用自动换行
+    minimap: { enabled: false },
+    padding: { top: 0, bottom: 0 } // 添加编辑器内部上下内边距
+  })
 
-onBeforeUnmount(() => {
-  if (editor) {
-    editor.dispose()
-  }
+  // 监听编辑器内容变化
+  editor.onDidChangeModelContent(() => {
+    editorStore.updateCode(editor.getValue())
+  })
 })
+
+// 监听编辑器选项变化
+watch(
+  () => editorStore.editorOptions,
+  (newOptions) => {
+    if (editor) {
+      editor.updateOptions({
+        ...newOptions,
+        padding: { top: 20, bottom: 20 } // 确保内边距始终存在
+      })
+    }
+  },
+  { deep: true }
+)
+
+// 监听尺寸变化
+watch(
+  [() => editorStore.actualEditorWidth, () => editorStore.actualEditorHeight],
+  () => {
+    if (editor) {
+      // 延迟调用 layout 以确保 DOM 更新完成
+      setTimeout(() => {
+        editor.layout()
+      }, 100)
+    }
+  }
+)
 </script>
 
 <style lang="scss" scoped>
 .code-editor {
-  width: 1024px;
-  height: 768px;
   display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: var(--bg-color);
-}
-
-.editor-toolbar {
-  display: flex;
-  gap: 8px;
-  padding: 8px 12px;
-  background-color: var(--panel-bg);
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.format-btn,
-.wrap-btn {
-  padding: 4px 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--button-bg);
-  color: var(--text-color);
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s ease;
-  
-  &:hover:not(:disabled) {
-    background-color: var(--button-hover-bg);
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
 }
 
 .editor-container {
-  width: 100%;
-  height: 100%;
-  flex: 1;
-  min-height: 0;
-  
-  // 确保Monaco Editor正确显示
-  :deep(.monaco-editor) {
-    .margin {
-      background-color: var(--panel-bg) !important;
-    }
-    
-    .monaco-editor-background {
-      background-color: var(--bg-color) !important;
-    }
-    
-    .current-line {
-      background-color: var(--hover-bg) !important;
-    }
-  }
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  padding: 20px; /* 添加容器内边距 */
 }
 </style>

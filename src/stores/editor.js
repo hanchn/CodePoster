@@ -9,9 +9,9 @@ export const useEditorStore = defineStore('editor', () => {
   const lineNumbers = ref(true)
   const readOnly = ref(false)
   
-  // 新增编辑器尺寸设置
-  const editorWidth = ref(1024)
-  const editorHeight = ref(768)
+  // 修改编辑器尺寸默认值为800x400
+  const editorWidth = ref(800)
+  const editorHeight = ref(400)
 
   const editorOptions = computed(() => ({
     value: code.value,
@@ -25,6 +25,15 @@ export const useEditorStore = defineStore('editor', () => {
     minimap: { enabled: false },
     scrollBeyondLastLine: false
   }))
+
+  // 计算实际编辑器尺寸（支持全0全屏）
+  const actualEditorWidth = computed(() => {
+    return editorWidth.value === 0 ? '100vw' : `${editorWidth.value}px`
+  })
+
+  const actualEditorHeight = computed(() => {
+    return editorHeight.value === 0 ? '100vh' : `${editorHeight.value}px`
+  })
 
   const updateCode = (newCode) => {
     code.value = newCode
@@ -64,6 +73,8 @@ export const useEditorStore = defineStore('editor', () => {
     readOnly,
     editorWidth,
     editorHeight,
+    actualEditorWidth,
+    actualEditorHeight,
     editorOptions,
     updateCode,
     setLanguage,
