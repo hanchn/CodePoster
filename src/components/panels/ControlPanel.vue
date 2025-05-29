@@ -46,7 +46,7 @@
           v-model.number="speedLevel" 
           type="number" 
           min="1" 
-          max="10" 
+          max="20" 
           step="1"
           class="number-input"
           @input="updateTypingSpeed"
@@ -144,16 +144,17 @@ const startRecording = () => {
   emit('start-recording')
 }
 
-// 在 script setup 中添加
-import { ref, computed } from 'vue'
+// 在现有的 script setup 中添加
+import { ref, computed, onMounted } from 'vue'
 
-// 速度级别 (1-10，数字越大速度越快)
-const speedLevel = ref(5) // 默认级别5
+// 速度级别 (1-20，数字越大速度越快)
+const speedLevel = ref(10) // 默认级别10
 
 // 将速度级别转换为毫秒延迟 (级别越高，延迟越短)
 const actualSpeed = computed(() => {
-  // 级别1=200ms, 级别10=20ms
-  return Math.max(20, 220 - speedLevel.value * 20)
+  // 级别1=200ms, 级别20=10ms
+  // 使用更平滑的曲线：200 - (级别-1) * 10
+  return Math.max(10, 210 - speedLevel.value * 10)
 })
 
 // 更新打字速度
@@ -161,8 +162,10 @@ const updateTypingSpeed = () => {
   editorStore.setTypingSpeed(actualSpeed.value)
 }
 
-// 初始化时设置默认速度
-updateTypingSpeed()
+// 组件挂载时初始化速度
+onMounted(() => {
+  updateTypingSpeed()
+})
 </script>
 
 <style lang="scss" scoped>
