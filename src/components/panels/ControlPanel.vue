@@ -1,7 +1,34 @@
 <template>
   <div class="control-panel">
     <div class="panel-section">
-      <h3>编辑器设置</h3>
+      <h3>主题设置</h3>
+      <div class="control-group">
+        <label>主题:</label>
+        <button @click="themeStore.toggleTheme()" class="theme-toggle">
+          {{ themeStore.currentTheme === 'dark' ? '🌞 浅色' : '🌙 深色' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>代码设置</h3>
+      <div class="control-group">
+        <label>语言:</label>
+        <select v-model="editorStore.language" class="language-select">
+          <option value="javascript">JavaScript</option>
+          <option value="typescript">TypeScript</option>
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+          <option value="cpp">C++</option>
+          <option value="csharp">C#</option>
+          <option value="go">Go</option>
+          <option value="rust">Rust</option>
+          <option value="php">PHP</option>
+          <option value="ruby">Ruby</option>
+          <option value="swift">Swift</option>
+          <option value="kotlin">Kotlin</option>
+        </select>
+      </div>
       <div class="control-group">
         <label>字体大小:</label>
         <input 
@@ -31,8 +58,10 @@
 
 <script setup>
 import { useEditorStore } from '@/stores/editor'
+import { useThemeStore } from '@/stores/theme'
 
 const editorStore = useEditorStore()
+const themeStore = useThemeStore()
 
 const generateImage = () => {
   // TODO: 实现图片生成功能
@@ -78,6 +107,32 @@ const startRecording = () => {
 
 .range-input {
   flex: 1;
+}
+
+.language-select {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.theme-toggle {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: var(--button-hover-bg);
+  }
 }
 
 .button-group {

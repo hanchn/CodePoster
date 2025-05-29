@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :data-theme="themeStore.currentTheme">
     <MainLayout />
   </div>
 </template>
@@ -17,9 +17,15 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
+@import '@/styles/global.scss';
+
 #app {
+  width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 </style>
 

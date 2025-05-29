@@ -1,15 +1,15 @@
 <template>
-  <div class="main-layout" :class="themeStore.currentTheme">
-    <AppHeader />
+  <div class="main-layout">
     <div class="content-area">
-      <CodeEditor />
+      <div class="editor-section">
+        <CodeEditor />
+      </div>
+      <ControlPanel />
     </div>
-    <ControlPanel />
   </div>
 </template>
 
 <script setup>
-import AppHeader from './AppHeader.vue'
 import CodeEditor from '@/components/editor/CodeEditor.vue'
 import ControlPanel from '@/components/panels/ControlPanel.vue'
 import { useThemeStore } from '@/stores/theme'
@@ -28,6 +28,12 @@ const themeStore = useThemeStore()
 }
 
 .content-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.editor-section {
   flex: 1;
   padding: 20px;
   overflow: hidden;
