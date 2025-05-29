@@ -41,7 +41,8 @@ const videoUrl = ref('')
 const videoBlob = ref(null)
 const previewVideo = ref(null)
 
-let screenRecorder = new ScreenRecorder()
+// Use ref for better reactivity and null checking
+const screenRecorder = ref(new ScreenRecorder())
 
 // 开始录制
 const startRecording = async () => {
@@ -52,7 +53,7 @@ const startRecording = async () => {
       throw new Error('未找到编辑器元素')
     }
 
-    await screenRecorder.startRecording(editorElement)
+    await screenRecorder.value.startRecording(editorElement)
     isRecording.value = true
     emit('recording-started')
     console.log('开始录制编辑器区域')
@@ -65,7 +66,7 @@ const startRecording = async () => {
 // 停止录制
 const stopRecording = async () => {
   try {
-    const blob = await screenRecorder.stopRecording()
+    const blob = await screenRecorder.value.stopRecording()
     videoBlob.value = blob
     videoUrl.value = URL.createObjectURL(blob)
     
@@ -116,8 +117,8 @@ onUnmounted(() => {
   if (videoUrl.value) {
     URL.revokeObjectURL(videoUrl.value)
   }
-  if (screenRecorder && typeof screenRecorder.cleanup === 'function') {
-    screenRecorder.cleanup()
+  if (screenRecorder.value && typeof screenRecorder.value.cleanup === 'function') {
+    screenRecorder.value.cleanup()
   }
 })
 
