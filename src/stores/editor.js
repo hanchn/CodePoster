@@ -5,7 +5,7 @@ export const useEditorStore = defineStore('editor', () => {
   const code = ref('// 欢迎使用 CodePoster\nconsole.log("Hello, World!");')
   const language = ref('javascript')
   const fontSize = ref(14)
-  const lineWrap = ref(false)
+  const lineWrap = ref(true) // 修改默认值为 true，启用自动换行
   const lineNumbers = ref(true)
   const readOnly = ref(false)
   

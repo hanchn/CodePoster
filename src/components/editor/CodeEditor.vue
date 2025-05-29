@@ -37,9 +37,9 @@ onMounted(() => {
     ...editorStore.editorOptions,
     automaticLayout: true,
     scrollBeyondLastLine: false,
-    wordWrap: 'on', // 启用自动换行
+    wordWrap: 'on', // 强制启用自动换行，覆盖 store 设置
     minimap: { enabled: false },
-    padding: { top: 0, bottom: 0 } // 添加编辑器内部上下内边距
+    padding: { top: 0, bottom: 0 }
   })
 
   // 监听编辑器内容变化
@@ -55,7 +55,8 @@ watch(
     if (editor) {
       editor.updateOptions({
         ...newOptions,
-        padding: { top: 20, bottom: 20 } // 确保内边距始终存在
+        wordWrap: 'on', // 强制保持自动换行
+        padding: { top: 20, bottom: 20 }
       })
     }
   },
