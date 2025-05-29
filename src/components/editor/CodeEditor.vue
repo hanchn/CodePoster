@@ -20,6 +20,7 @@ const editorStore = useEditorStore()
 const editorContainer = ref(null)
 let editor = null
 
+// 在 onMounted 中添加
 onMounted(() => {
   // 禁用 Monaco Editor 的 worker
   self.MonacoEnvironment = {
@@ -46,6 +47,17 @@ onMounted(() => {
   editor.onDidChangeModelContent(() => {
     editorStore.updateCode(editor.getValue())
   })
+  
+  // 暴露编辑器实例到全局，供录制功能使用
+  window.monacoEditorInstance = editor
+})
+
+// 在 onUnmounted 中清理
+onUnmounted(() => {
+  // 清理全局引用
+  if (window.monacoEditorInstance) {
+    delete window.monacoEditorInstance
+  }
 })
 
 // 监听编辑器选项变化

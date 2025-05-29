@@ -3,7 +3,8 @@
     <!-- 录制中的悬浮按钮 -->
     <div v-if="isRecording" class="recording-float-btn" @click="stopRecording">
       <div class="recording-indicator"></div>
-      <span>结束录制</span>
+      <span v-if="isTyping">代码输入中...</span>
+      <span v-else>结束录制</span>
     </div>
     
     <!-- 视频预览模态框 -->
@@ -32,6 +33,7 @@
 <script setup>
 import { ref, onUnmounted } from 'vue'
 import { ScreenRecorder } from '@/utils/screenRecorder'
+import { CodeTypingEffect } from '@/utils/codeTyping'
 
 const emit = defineEmits(['recording-started', 'recording-stopped'])
 
@@ -40,9 +42,18 @@ const showPreview = ref(false)
 const videoUrl = ref('')
 const videoBlob = ref(null)
 const previewVideo = ref(null)
+const isTyping = ref(false)
 
-// Use ref for better reactivity and null checking
 const screenRecorder = ref(new ScreenRecorder())
+let codeTypingEffect = null
+
+// 示例代码 - 可以从外部传入
+const sampleCode = `function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log(fibonacci(10));`
 
 // 开始录制
 const startRecording = async () => {
@@ -53,9 +64,32 @@ const startRecording = async () => {
       throw new Error('未找到编辑器元素')
     }
 
+    // 获取 Monaco Editor 实例
+    const monacoEditor = window.monacoEditorInstance // 需要在 CodeEditor.vue 中暴露
+    if (!monacoEditor) {
+      throw new Error('未找到编辑器实例')
+    }
+
+    // 开始录制
     await screenRecorder.value.startRecording(editorElement)
     isRecording.value = true
     emit('recording-started')
+    
+    // 延迟一秒后开始自动输入代码
+    setTimeout(async () => {
+      if (isRecording.value) {
+        codeTypingEffect = new CodeTypingEffect(monacoEditor, {
+          typingSpeed: 80, // 稍慢一点，更真实
+          pauseOnNewLine: 300,
+          pauseOnSpecialChar: 150
+        })
+        
+        isTyping.value = true
+        await codeTypingEffect.startTyping(sampleCode)
+        isTyping.value = false
+      }
+    }, 1000)
+    
     console.log('开始录制编辑器区域')
   } catch (error) {
     console.error('开始录制失败:', error)
@@ -66,6 +100,12 @@ const startRecording = async () => {
 // 停止录制
 const stopRecording = async () => {
   try {
+    // 停止代码输入
+    if (codeTypingEffect) {
+      codeTypingEffect.stopTyping()
+      isTyping.value = false
+    }
+    
     const blob = await screenRecorder.value.stopRecording()
     videoBlob.value = blob
     videoUrl.value = URL.createObjectURL(blob)
@@ -202,8 +242,8 @@ defineExpose({
   background: var(--panel-bg);
   border-radius: 12px;
   padding: 24px;
-  max-width: 80vw;
-  max-height: 80vh;
+  max-width: 95vw; /* 从 80vw 增加到 95vw */
+  max-height: 90vh; /* 从 80vh 增加到 90vh */
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -219,9 +259,11 @@ defineExpose({
 
 .preview-video {
   max-width: 100%;
-  max-height: 60vh;
+  max-height: 75vh; /* 从 60vh 增加到 75vh */
   border-radius: 8px;
   background: #000;
+  width: 100%; /* 确保视频占满容器宽度 */
+  height: auto; /* 保持宽高比 */
 }
 
 .preview-actions {

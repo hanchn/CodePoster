@@ -16,20 +16,30 @@ export class ScreenRecorder {
       // 获取元素的位置和尺寸
       const rect = element.getBoundingClientRect()
       
-      // 请求屏幕录制权限
+      // 请求屏幕录制权限 - 提高录制质量
       this.stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           mediaSource: 'screen',
-          width: { ideal: rect.width },
-          height: { ideal: rect.height }
+          width: { ideal: Math.max(rect.width, 1920) }, // 最小1920宽度
+          height: { ideal: Math.max(rect.height, 1080) }, // 最小1080高度
+          frameRate: { ideal: 30 }, // 30fps
+          cursor: 'always' // 显示鼠标光标
         },
         audio: false
       })
 
-      // 创建 MediaRecorder
-      this.mediaRecorder = new MediaRecorder(this.stream, {
-        mimeType: 'video/webm;codecs=vp9'
-      })
+      // 创建 MediaRecorder - 提高编码质量
+      const options = {
+        mimeType: 'video/webm;codecs=vp9',
+        videoBitsPerSecond: 5000000 // 5Mbps 比特率
+      }
+      
+      // 如果不支持 vp9，尝试 vp8
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options.mimeType = 'video/webm;codecs=vp8'
+      }
+      
+      this.mediaRecorder = new MediaRecorder(this.stream, options)
 
       this.recordedChunks = []
       
