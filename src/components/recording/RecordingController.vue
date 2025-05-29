@@ -116,7 +116,7 @@ onUnmounted(() => {
   if (videoUrl.value) {
     URL.revokeObjectURL(videoUrl.value)
   }
-  if (screenRecorder) {
+  if (screenRecorder && typeof screenRecorder.cleanup === 'function') {
     screenRecorder.cleanup()
   }
 })

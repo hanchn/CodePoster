@@ -9,12 +9,19 @@
     <!-- 浮动工具栏 -->
     <div class="floating-panel" :class="{ 'panel-hidden': !panelVisible }">
       <div class="panel-content">
-        <ControlPanel />
+        <ControlPanel @start-recording="handleStartRecording" />
       </div>
       <button class="panel-toggle" @click="togglePanel">
         {{ panelVisible ? '❯' : '❮' }}
       </button>
     </div>
+    
+    <!-- 录制控制器 -->
+    <RecordingController 
+      ref="recordingController"
+      @recording-started="onRecordingStarted"
+      @recording-stopped="onRecordingStopped"
+    />
   </div>
 </template>
 
@@ -22,13 +29,36 @@
 import { ref } from 'vue'
 import CodeEditor from '@/components/editor/CodeEditor.vue'
 import ControlPanel from '@/components/panels/ControlPanel.vue'
+import RecordingController from '@/components/recording/RecordingController.vue'
 import { useThemeStore } from '@/stores/theme'
 
 const themeStore = useThemeStore()
 const panelVisible = ref(true)
+const recordingController = ref(null)
 
 const togglePanel = () => {
   panelVisible.value = !panelVisible.value
+}
+
+// 处理开始录制
+const handleStartRecording = async () => {
+  if (recordingController.value) {
+    // 录制时自动收起菜单
+    panelVisible.value = false
+    await recordingController.value.startRecording()
+  }
+}
+
+// 录制开始回调
+const onRecordingStarted = () => {
+  console.log('录制已开始')
+}
+
+// 录制结束回调
+const onRecordingStopped = () => {
+  console.log('录制已结束')
+  // 录制结束后可以重新显示菜单
+  // panelVisible.value = true
 }
 </script>
 

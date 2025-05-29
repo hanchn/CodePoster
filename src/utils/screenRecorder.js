@@ -78,6 +78,19 @@ export class ScreenRecorder {
     })
   }
 
+  // 清理资源
+  cleanup() {
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop())
+      this.stream = null
+    }
+    if (this.mediaRecorder) {
+      this.mediaRecorder = null
+    }
+    this.recordedChunks = []
+    this.isRecording = false
+  }
+
   // 下载录制的视频
   downloadVideo(blob, filename = `code-recording-${Date.now()}.webm`) {
     const url = URL.createObjectURL(blob)

@@ -88,6 +88,9 @@ import html2canvas from 'html2canvas'
 const editorStore = useEditorStore()
 const themeStore = useThemeStore()
 
+// 定义事件
+const emit = defineEmits(['start-recording'])
+
 const generateImage = async () => {
   try {
     // 查找编辑器容器元素
@@ -124,8 +127,8 @@ const generateImage = async () => {
 }
 
 const startRecording = () => {
-  // TODO: 实现视频录制功能
-  console.log('视频录制功能待实现')
+  // 触发录制事件
+  emit('start-recording')
 }
 </script>
 
