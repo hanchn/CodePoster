@@ -8,7 +8,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import AppHeader from './AppHeader.vue'
 import CodeEditor from '@/components/editor/CodeEditor.vue'
 import ControlPanel from '@/components/panels/ControlPanel.vue'

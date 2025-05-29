@@ -1,15 +1,10 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
   <div id="app">
     <MainLayout />
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import MainLayout from '@/components/layout/MainLayout.vue'
 import { useThemeStore } from '@/stores/theme'
 import { onMounted } from 'vue'

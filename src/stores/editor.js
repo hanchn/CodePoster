@@ -1,17 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-export interface EditorState {
-  code: string
-  language: string
-  fontSize: number
-  lineWrap: boolean
-  lineNumbers: boolean
-  readOnly: boolean
-}
-
 export const useEditorStore = defineStore('editor', () => {
-  const code = ref('')
+  const code = ref('// 欢迎使用 CodePoster\nconsole.log("Hello, World!");')
   const language = ref('javascript')
   const fontSize = ref(14)
   const lineWrap = ref(false)
@@ -31,15 +22,15 @@ export const useEditorStore = defineStore('editor', () => {
     scrollBeyondLastLine: false
   }))
 
-  const updateCode = (newCode: string) => {
+  const updateCode = (newCode) => {
     code.value = newCode
   }
 
-  const setLanguage = (newLanguage: string) => {
+  const setLanguage = (newLanguage) => {
     language.value = newLanguage
   }
 
-  const setFontSize = (size: number) => {
+  const setFontSize = (size) => {
     fontSize.value = size
   }
 
@@ -49,6 +40,10 @@ export const useEditorStore = defineStore('editor', () => {
 
   const toggleLineNumbers = () => {
     lineNumbers.value = !lineNumbers.value
+  }
+
+  const toggleReadOnly = () => {
+    readOnly.value = !readOnly.value
   }
 
   return {
@@ -63,6 +58,7 @@ export const useEditorStore = defineStore('editor', () => {
     setLanguage,
     setFontSize,
     toggleLineWrap,
-    toggleLineNumbers
+    toggleLineNumbers,
+    toggleReadOnly
   }
 })

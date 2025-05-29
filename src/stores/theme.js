@@ -1,20 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export type ThemeType = 'dark' | 'light'
-
 export const useThemeStore = defineStore('theme', () => {
-  const currentTheme = ref<ThemeType>('dark')
+  const currentTheme = ref('dark')
 
   const initTheme = () => {
-    const savedTheme = localStorage.getItem('codeposter-theme') as ThemeType
+    const savedTheme = localStorage.getItem('codeposter-theme')
     if (savedTheme) {
       currentTheme.value = savedTheme
     }
     applyTheme()
   }
 
-  const setTheme = (theme: ThemeType) => {
+  const setTheme = (theme) => {
     currentTheme.value = theme
     localStorage.setItem('codeposter-theme', theme)
     applyTheme()
