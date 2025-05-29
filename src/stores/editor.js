@@ -8,6 +8,10 @@ export const useEditorStore = defineStore('editor', () => {
   const lineWrap = ref(false)
   const lineNumbers = ref(true)
   const readOnly = ref(false)
+  
+  // 新增编辑器尺寸设置
+  const editorWidth = ref(1024)
+  const editorHeight = ref(768)
 
   const editorOptions = computed(() => ({
     value: code.value,
@@ -34,6 +38,11 @@ export const useEditorStore = defineStore('editor', () => {
     fontSize.value = size
   }
 
+  const setEditorSize = (width, height) => {
+    editorWidth.value = width
+    editorHeight.value = height
+  }
+
   const toggleLineWrap = () => {
     lineWrap.value = !lineWrap.value
   }
@@ -53,10 +62,13 @@ export const useEditorStore = defineStore('editor', () => {
     lineWrap,
     lineNumbers,
     readOnly,
+    editorWidth,
+    editorHeight,
     editorOptions,
     updateCode,
     setLanguage,
     setFontSize,
+    setEditorSize,
     toggleLineWrap,
     toggleLineNumbers,
     toggleReadOnly

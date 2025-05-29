@@ -1,11 +1,19 @@
 <template>
   <div class="code-editor">
+    <div class="editor-toolbar">
+      <button @click="formatCode" class="format-btn" :disabled="!canFormat">
+        🎨 格式化代码
+      </button>
+      <button @click="toggleWrap" class="wrap-btn">
+        {{ editorStore.lineWrap ? '📄 取消换行' : '📄 自动换行' }}
+      </button>
+    </div>
     <div ref="editorContainer" class="editor-container"></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import { useEditorStore } from '@/stores/editor'
 import * as monaco from 'monaco-editor'
 
@@ -25,6 +33,12 @@ const editorContainer = ref(null)
 const editorStore = useEditorStore()
 let editor = null
 
+// 检查当前语言是否支持格式化
+const canFormat = computed(() => {
+  const supportedLanguages = ['javascript', 'typescript', 'json', 'html', 'css', 'scss', 'less']
+  return supportedLanguages.includes(editorStore.language)
+})
+
 onMounted(() => {
   if (editorContainer.value) {
     editor = monaco.editor.create(editorContainer.value, {
@@ -33,14 +47,37 @@ onMounted(() => {
       theme: 'vs-dark',
       fontSize: editorStore.fontSize,
       automaticLayout: true,
+      wordWrap: editorStore.lineWrap ? 'on' : 'off',
+      lineNumbers: 'on',
+      lineNumbersMinChars: 4,
+      glyphMargin: false,
+      folding: true,
+      lineDecorationsWidth: 10,
+      lineHeight: 22,
+      renderLineHighlight: 'line',
+      selectOnLineNumbers: true,
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
-      quickSuggestions: false,
-      parameterHints: { enabled: false },
-      suggestOnTriggerCharacters: false,
-      acceptSuggestionOnEnter: 'off',
-      tabCompletion: 'off',
-      wordBasedSuggestions: false
+      scrollbar: {
+        vertical: 'visible',
+        horizontal: 'visible',
+        useShadows: false,
+        verticalHasArrows: false,
+        horizontalHasArrows: false,
+        verticalScrollbarSize: 14,
+        horizontalScrollbarSize: 14
+      },
+      overviewRulerBorder: false,
+      overviewRulerLanes: 0,
+      hideCursorInOverviewRuler: true,
+      quickSuggestions: true,
+      parameterHints: { enabled: true },
+      suggestOnTriggerCharacters: true,
+      acceptSuggestionOnEnter: 'on',
+      tabCompletion: 'on',
+      wordBasedSuggestions: true,
+      formatOnPaste: true,
+      formatOnType: true
     })
 
     editor.onDidChangeModelContent(() => {
@@ -61,6 +98,28 @@ watch(() => editorStore.fontSize, (newSize) => {
   }
 })
 
+watch(() => editorStore.lineWrap, (newWrap) => {
+  if (editor) {
+    editor.updateOptions({ wordWrap: newWrap ? 'on' : 'off' })
+  }
+})
+
+// 格式化代码
+const formatCode = async () => {
+  if (editor && canFormat.value) {
+    try {
+      await editor.getAction('editor.action.formatDocument').run()
+    } catch (error) {
+      console.warn('格式化失败:', error)
+    }
+  }
+}
+
+// 切换自动换行
+const toggleWrap = () => {
+  editorStore.toggleLineWrap()
+}
+
 onBeforeUnmount(() => {
   if (editor) {
     editor.dispose()
@@ -80,9 +139,55 @@ onBeforeUnmount(() => {
   background-color: var(--bg-color);
 }
 
+.editor-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.format-btn,
+.wrap-btn {
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--button-hover-bg);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 .editor-container {
   width: 100%;
   height: 100%;
   flex: 1;
+  min-height: 0;
+  
+  // 确保Monaco Editor正确显示
+  :deep(.monaco-editor) {
+    .margin {
+      background-color: var(--panel-bg) !important;
+    }
+    
+    .monaco-editor-background {
+      background-color: var(--bg-color) !important;
+    }
+    
+    .current-line {
+      background-color: var(--hover-bg) !important;
+    }
+  }
 }
 </style>
