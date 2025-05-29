@@ -1,13 +1,5 @@
 <template>
   <div class="code-editor">
-    <div class="editor-toolbar">
-      <button @click="formatCode" class="format-btn" :disabled="!canFormat">
-        🎨 格式化代码
-      </button>
-      <button @click="toggleWrap" class="wrap-btn">
-        {{ editorStore.lineWrap ? '📄 取消换行' : '📄 自动换行' }}
-      </button>
-    </div>
     <div ref="editorContainer" class="editor-container"></div>
   </div>
 </template>

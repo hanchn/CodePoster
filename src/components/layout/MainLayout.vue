@@ -67,7 +67,7 @@ const togglePanel = () => {
   transition: transform 0.3s ease;
   
   &.panel-hidden {
-    transform: translateX(280px);
+    transform: translateX(260px); /* 调整隐藏距离，只露出切换按钮 */
   }
 }
 
@@ -87,6 +87,8 @@ const togglePanel = () => {
   transition: all 0.3s ease;
   margin-top: 50vh;
   transform: translateY(-50%);
+  position: relative;
+  z-index: 1001; /* 确保按钮始终可见 */
   
   &:hover {
     background-color: var(--hover-bg);
@@ -99,5 +101,6 @@ const togglePanel = () => {
   background-color: var(--panel-bg);
   border-left: 1px solid var(--border-color);
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
 }
 </style>

@@ -40,6 +40,30 @@
         >
         <span>{{ editorStore.fontSize }}px</span>
       </div>
+      <div class="control-group">
+        <label>编辑器宽度:</label>
+        <input 
+          v-model.number="editorStore.editorWidth" 
+          type="range" 
+          min="600" 
+          max="1400" 
+          step="50" 
+          class="range-input"
+        >
+        <span>{{ editorStore.editorWidth }}px</span>
+      </div>
+      <div class="control-group">
+        <label>编辑器高度:</label>
+        <input 
+          v-model.number="editorStore.editorHeight" 
+          type="range" 
+          min="400" 
+          max="1000" 
+          step="50" 
+          class="range-input"
+        >
+        <span>{{ editorStore.editorHeight }}px</span>
+      </div>
     </div>
     
     <div class="panel-section">
@@ -105,8 +129,18 @@ const startRecording = () => {
   }
 }
 
-.range-input {
-  flex: 1;
+.theme-toggle {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: var(--hover-bg);
+  }
 }
 
 .language-select {
@@ -116,23 +150,16 @@ const startRecording = () => {
   border-radius: 4px;
   background-color: var(--input-bg);
   color: var(--text-color);
-  font-size: 0.9rem;
+  
+  option {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+  }
 }
 
-.theme-toggle {
+.range-input {
   flex: 1;
-  padding: 0.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--button-bg);
-  color: var(--text-color);
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background-color: var(--button-hover-bg);
-  }
+  margin: 0 0.5rem;
 }
 
 .button-group {
@@ -145,13 +172,13 @@ const startRecording = () => {
   padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: var(--button-bg);
+  background-color: var(--input-bg);
   color: var(--text-color);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   
   &:hover {
-    background-color: var(--button-hover-bg);
+    background-color: var(--hover-bg);
   }
 }
 </style>
